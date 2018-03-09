@@ -11,6 +11,7 @@
   git clone https://github.com/zhaoc1/minions-snakemake.git minions-snakemake
   cd minions-snakemake
   source activate minions
+  conda install --file conda-requirements.txt
   ```
  
 3. Clone Ryan Wick's Basecalling-comparison repository
@@ -36,4 +37,17 @@
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
   make
+  
+  ## Pilon
+  wget https://github.com/broadinstitute/pilon/releases/download/v1.22/pilon-1.22.jar
+  ```
+
+## Usage
+
+1. Collect Albacore basecalled raw fastq reads
+
+Sometime, the sequencing was interrupted due to reasons like lack of memory 🙄. Anyway, need to manually re-run `_all_raw_fastq` rules multiple times.
+
+  ```bash
+  snakemake _all_raw_fastq
   ```
