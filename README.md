@@ -1,15 +1,15 @@
 ## Installation
 
-1. Clone Jesse's conda-gcc5 directory and create an environment with GCC5 installed
+1. Clone Jesse's conda-gcc5 repository and create an environment with GCC5 installed
   
   ```bash
   git clone https://github.com/ressy/conda-gcc5.git
   bash setup.py minions
   ```
-2. Clone this directory into a local folder and activate minions environment
+2. Clone this repository into a local directory and activate minions environment
   ```bash
-  git clone https://github.com/zhaoc1/minions-snakemake.git my_minions
-  cd my_minions
+  git clone https://github.com/zhaoc1/minions-snakemake.git minions-snakemake
+  cd minions-snakemake
   source activate minions
   ```
  
