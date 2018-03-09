@@ -46,8 +46,9 @@
 
 1. Collect Albacore basecalled raw fastq reads
 
-Sometime, the sequencing was interrupted due to reasons like lack of memory 🙄. Anyway, need to manually re-run `_all_raw_fastq` rules multiple times.
-
-  ```bash
-  snakemake _all_raw_fastq
-  ```
+    Sometimes, the sequencing was interrupted due to reasons like lack of memory 🙄. Anyway, need to manually re-run
+  `_all_raw_fastq` rules multiple times.
+  
+   ```bash
+   snakemake _all_raw_fastq
+   ```
