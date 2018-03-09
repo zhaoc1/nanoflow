@@ -26,10 +26,12 @@
   git clone https://github.com/marbl/canu.git
   cd canu/src
   make -j 4
+  
   ## Unicycler
   git clone https://github.com/rrwick/Unicycler.git
   cd Unicycler
   python3 setup.py install
+  
   ## Nanopolish
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
