@@ -40,9 +40,3 @@
   ```
 
 ## Usage
-
-1. Collect Albacore basecalled raw fastq reads
-
-   ```bash
-   snakemake _all_raw_fastq
-   ```
