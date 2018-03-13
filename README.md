@@ -23,17 +23,19 @@
 
 4. Download other packages into local directory
   ```bash
-   ## Canu
+   ## Canu v1.7
   git clone https://github.com/marbl/canu.git
   cd canu/src
   make -j 4
   
-  ## Unicycler
+  ## Unicycler v0.4.4
   git clone https://github.com/rrwick/Unicycler.git
   cd Unicycler
   python3 setup.py install
   
-  ## Nanopolish
+  ## Nanopolish v0.9.0
+  
+  
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
   make
