@@ -1,0 +1,31 @@
+admins: zhaocy.dut@gmail.com 
+project_dir: /scr1/users/zhaoc1/cdiff_run14_20180315
+
+
+## run9: bad formated inputs
+raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run9_cdiff_t3_t4_t5/first_batch_basecalled_albacore_v2.1
+raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run9_cdiff_t3_t4_t5/second_batch_raw_basecalled_albacore_v2.1
+
+## run10: 
+raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_t10/20171031_1428_t1_t6_t7_t9_t10
+raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_t10/20171031_1428_t1_t6_t7_t9_t10
+
+## run13: normal two inputs
+raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run13_cdiff_t8_t11_t12_t14_t16/batch2of3
+raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run13_cdiff_t8_t11_t12_t14_t16/batch3of3
+
+## run14: stardard one inputs
+raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run14_cdiff_t15_t18_t19_t21_t22/20180220_2138
+raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run14_cdiff_t15_t18_t19_t21_t22/20180220_2138
+
+barcodes_fp: barcodes.txt
+genome_fp: GCF_000932055.fa
+short_reads_fp: short_reads_nextera
+
+basecalling_cmp_fp: /home/zhaoc1/minions-snakemake/local/Basecalling-comparison
+
+canu_fp: /home/zhaoc1/minions-snakemake/local/canu/Linux-amd64/bin/canu
+canu_prefix: cdiff
+canu_genome_size: 4.3m
+
+nanopolish_fp: /home/zhaoc1/minions-snakemake/local/nanopolish/nanopolish
