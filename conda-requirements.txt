@@ -1,0 +1,17 @@
+snakemake
+minimap2
+porechop
+filtlong
+canu=1.7
+assembly-stats
+bwa
+samtools
+parallel
+biopython
+unicycler=0.4.4
+miniasm
+biopython
+pysam
+racon
+java-jdk
+
