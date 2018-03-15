@@ -24,7 +24,6 @@
 4. Download other packages into local directory
   ```bash
   ## Nanopolish v0.9.0
-  
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
   make
