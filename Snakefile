@@ -98,6 +98,7 @@ rule asm_stats_subsample:
   assembly-stats {input} > {output}
   """
 
+## Long Reads Assembler: canu
 rule canu_asm:
  input:
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
@@ -178,8 +179,8 @@ rule bwa_index:
  input:
   config['project_dir'] + '/04_canu_asm/{barcode}/' + config['canu_prefix'] + '.contigs.fasta'
  output:
-  contigs = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
-  index = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/' + config['canu_prefix'] + '.contigs.fasta.amb'
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
+  index = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.contigs.fasta.amb'
  shell:
   """
   cp {input} {output.contigs}
@@ -190,13 +191,13 @@ rule bwa_align:
  input:
   subsampled_reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
-  contigs = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
-  contigs_index = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/' + config['canu_prefix'] + '.contigs.fasta.amb'
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
+  contigs_index = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.contigs.fasta.amb'
  output:
-  sorted_bam = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/reads.sorted.bam',
-  sorted_bai = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/reads.sorted.bam.bai'
+  sorted_bam = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam',
+  sorted_bai = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam.bai'
  params:
-  temp = config['project_dir'] + '/05_nanopolish_bwa/{barcode}/reads.tmp'
+  temp = config['project_dir'] + '/05_nanopolish/{barcode}/reads.tmp'
  threads: 8
  shell:
   """
@@ -211,11 +212,11 @@ rule minimap2_long:
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
  output:
-  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
-  sorted_bam = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam',
-  sorted_bai = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam.bai'
+  contigs = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
+  sorted_bam = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.sorted.bam',
+  sorted_bai = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.sorted.bam.bai'
  params:
-  temp = config['project_dir'] + '/05_nanopolish/{barcode}/reads.tmp'
+  temp = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.tmp'
  threads: 8
  shell:
   """
@@ -243,13 +244,13 @@ rule nanopolish_consensus:
  params:
   results_fp = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.results',
   polished_fp = config['project_dir'] + '/05_nanopolish/{barcode}/polished.results'
- threads: 32
+ threads: 8
  shell:
   """
   export PATH=/home/zhaoc1/minions-snakemake/local/nanopolish:$PATH
   export LD_LIBRARY_PATH="$CONDA_PREFIX/lib64"
   python {input.makerange_fp} {input.contigs} | \
-   parallel --results {params.results_fp} -P 8 \
+   parallel --results {params.results_fp} -P 7 \
    nanopolish variants --consensus {params.polished_fp}/polished.{{1}}.fa \
     -w {{1}} -r {input.reads} -b {input.bam} -g {input.contigs} \
     -t 4 --min-candidate-frequency 0.1 --methylation-aware=dcm,dam
@@ -261,7 +262,7 @@ rule _all_polish:
  input:
   expand(config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.polished.contigs.fasta', barcode=["barcode03"])
 
-rule ass_nanopolish:
+rule assess_nanopolish:
  input:
   genome = config['project_dir'] + '/' + config['genome_fp'],
   contigs = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.contigs.fasta',
@@ -278,6 +279,83 @@ rule ass_nanopolish:
   minimap2 -x map10k -t {threads} -c {input.genome} {output.asm_pieces} > {output.asm_aln}
   python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
   """
+
+#rule run_pilon:
+# input:
+#  nanopolisehd contigs
+# output:
+#  contigv1
+# threads: 8 
+# shell:
+#  """
+#  haha 
+#  """
+
+## Hybrid Assembly Pipeline: unicycler
+rule run_unicycler:
+ input:
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
+  R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq'
+ output:
+  contigs = config['project_dir'] + '/06_unicycler/{barcode}/assembly.fasta'
+ threads: 8
+ params:
+  output_dir = config['project_dir'] + '/06_unicycler/{barcode}'
+ shell:
+  """
+  unicycler -1 {input.R1} -2 {input.R2} -l {input.reads} -o {params.output_dir} --keep_temp 2 -t {threads}
+  """
+
+## http://nanopolish.readthedocs.io/en/latest/quickstart_consensus.html
+## http://mummer.sourceforge.net/manual/#aligningdraft
+rule eval_asms:
+ input:
+  ref_genome = config['project_dir'] + '/' + config['genome_fp'],
+  contigs_nanopolish = config['project_dir'] + '/05_nanopolish/{barcode}/' + config['canu_prefix'] + '.polished.contigs.fasta',
+  contigs_unicycler = config['project_dir'] + '/06_unicycler/{barcode}/assembly.fasta'
+ output:
+  config['project_dir'] + '/reports/07_evaluate_asms/dnadiff/{barcode}/asm.nanopolish.report',
+  config['project_dir'] + '/reports/07_evaluate_asms/dnadiff/{barcode}/asm.unicycler.report',
+  config['project_dir'] + '/reports/07_evaluate_asms/nucmer/{barcode}/ref.unicycler.coords',
+  config['project_dir'] + '/reports/07_evaluate_asms/nucmer/{barcode}/ref.nanopolish.coords',
+  config['project_dir'] + '/reports/07_evaluate_asms/nucmer/{barcode}/nanopolish_unicycler.coords',
+ params:
+  out_dir1 = config['project_dir'] + '/reports/07_evaluate_asms/dnadiff/{barcode}',
+  out_dir2 = config['project_dir'] + '/reports/07_evaluate_asms/nucmer/{barcode}',
+  prefix1 = 'ref.nanopolish',
+  prefix2 = 'ref.unicycler',
+  prefix3 = 'nanopolish.unicycler'
+ shell:
+  """
+  ## avgident
+  cd {params.out_dir1}
+  dnadiff --prefix asm.unicycler {input.ref_genome} {input.contigs_unicycler}
+  dnadiff --prefix asm.nanopolish {input.ref_genome} {input.contigs_nanopolish}
+  
+  cd {params.out_dir2}
+  ## mapping a draft sequence to a finished sequence
+  nucmer -maxmatch -c 100 -p {params.prefix1} {input.ref_genome} {input.contigs_nanopolish}
+  show-coords -r -c -l {params.prefix1}.delta > {output[3]}
+  
+  nucmer -maxmatch -c 100 -p {params.prefix2} {input.ref_genome} {input.contigs_unicycler}
+  show-coords -r -c -l {params.prefix2}.delta > {output[2]}
+  
+  ## aligning two draft sequences
+  nucmer -maxmatch -c 100 -p {params.prefix3} {input.contigs_nanopolish} {input.contigs_unicycler}
+  show-coords -r -c -l {params.prefix3}.delta > {output[4]}
+  """
+## TODO: highly similar sequences with rearrangments using run-mummer3 !!
+
+
+## TODO: change the contigs variable in canu, polish, unicycler correspondingly
+rule _test_eval:
+ input:
+  expand(config['project_dir'] + '/reports/07_evaluate_asms/dnadiff/{barcode}/{prefix}.report',barcode="barcode03", prefix=['asm.nanopolish', 'asm.unicycler'])
+
+rule _test_unicycler:
+ input:
+  expand(config['project_dir'] + '/07_unicycler/{barcode}/assembly.fasta', barcode="barcode03")
 
 #onsuccess:
 # print("Workflow finished, no error")
