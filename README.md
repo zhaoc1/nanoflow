@@ -1,16 +1,16 @@
 ## Installation
 
-1. Clone Jesse's conda-gcc5 repository and create an environment with GCC5 installed
+1. Clone Jesse's conda-gcc5 repository and create an new environment `nanoflow` with GCC5 installed
   
   ```bash
   git clone https://github.com/ressy/conda-gcc5.git
-  bash setup.py minions
+  bash setup.py nanoflow
   ```
 2. Clone this repository into a local directory and activate minions environment
   ```bash
-  git clone https://github.com/zhaoc1/minions-snakemake.git minions-snakemake
-  cd minions-snakemake
-  source activate minions
+  git clone https://github.com/zhaoc1/nanoflow.git nanoflow
+  cd nanoflow
+  source activate nanoflow
   conda install --file conda-requirements.txt
   ```
  
