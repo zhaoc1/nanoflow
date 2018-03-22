@@ -22,7 +22,7 @@ rule run_unicycler:
   outdir = config['project_dir'] + '/08_unicycler/{barcode}'
  shell:
   """
-  unicycler -1 {input.R1} -2 {input.R2} -l {input.reads} -o {params.output_dir} -t {threads}
+  unicycler -1 {input.R1} -2 {input.R2} -l {input.reads} -o {params.outdir} -t {threads}
   """
 
 rule assess_unicycler:
