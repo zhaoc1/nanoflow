@@ -6,7 +6,7 @@
   git clone https://github.com/ressy/conda-gcc5.git
   bash setup.py nanoflow
   ```
-2. Clone this repository into a local directory and activate minions environment
+2. Clone this repository into a local directory and activate `nanoflow` environment
   ```bash
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
