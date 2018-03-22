@@ -15,7 +15,8 @@ raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_
 
 barcodes_fp: barcodes.txt
 genome_fp: GCF_000932055.fa
-short_reads_fp: short_reads_nextera
+gene_fp: GCF_000932055.gff
+short_reads_fp: short_reads_truseq
 
 basecalling_cmp_fp: $HOME/nanoflow/local/Basecalling-comparison
 
