@@ -73,5 +73,10 @@
     - Assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
    
   ```bash
+  ## set up for Quast
+  cd local
+  git clone https://github.com/lucian-ilie/E-MEM.git
+  cd E-MEM
+  make
   snakemake --configfile config.yaml _all_comp
   ```
