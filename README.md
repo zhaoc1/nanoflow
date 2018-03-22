@@ -31,6 +31,11 @@
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
   make
+  
+  ## set up for Quast
+  git clone https://github.com/lucian-ilie/E-MEM.git
+  cd E-MEM
+  make
   ```
 
 ## Usage
@@ -72,12 +77,6 @@
     - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
     - Assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
    
-  ```bash
-  ## set up for Quast
-  cd local
-  git clone https://github.com/lucian-ilie/E-MEM.git
-  cd E-MEM
-  make
-  
+  ```bash  
   snakemake --configfile config.yaml _all_comp --use-conda
   ```
