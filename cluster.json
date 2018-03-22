@@ -1,0 +1,20 @@
+{
+    "__default__" :
+    {
+        "h_vmem" : "8G",
+        "mem_free" : "4G",
+        "m_mem_free" : "3G"
+    },
+    "demultiplex" :
+    {
+        "h_vmem" : "12G",
+        "mem_free" : "10G",
+        "m_mem_free" : "8G"
+    },
+    "fastqc" :
+    {
+        "h_vmem" : "10G",
+        "mem_free" : "8G",
+        "m_mem_free" : "7G"
+    }
+}

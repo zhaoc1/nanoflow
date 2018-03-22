@@ -9,15 +9,18 @@ raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run13_cdiff_t8_t11_t12_t
 raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run9_cdiff_t3_t4_t5/first_batch_basecalled_albacore_v2.1
 raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run9_cdiff_t3_t4_t5/second_batch_raw_basecalled_albacore_v2.1
 
+## run10: 
+raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_t10/20171031_1428_t1_t6_t7_t9_t10
+raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_t10/20171031_1428_t1_t6_t7_t9_t10
+
 barcodes_fp: barcodes.txt
 genome_fp: GCF_000932055.fa
 short_reads_fp: short_reads_nextera
 
-basecalling_cmp_fp: /home/zhaoc1/minions-snakemake/local/Basecalling-comparison
+basecalling_cmp_fp: $HOME/nanoflow/local/Basecalling-comparison
 
-canu_fp: /home/zhaoc1/minions-snakemake/local/canu/Linux-amd64/bin/canu
-canu_prefix: cdiff
+canu_fp: $HOME/nanoflow/local/canu/Linux-amd64/bin/canu
 canu_genome_size: 4.3m
 
-nanopolish_fp: /home/zhaoc1/minions-snakemake/local/nanopolish
-nanopolish_scripts_fp: /home/zhaoc1/minions-snakemake/local/nanopolish/scripts
+nanopolish_fp: $HOME/nanoflow/local/nanopolish
+nanopolish_scripts_fp: $HOME/nanoflow/local/nanopolish/scripts
