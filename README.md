@@ -46,9 +46,37 @@
   ```
   
 3. Hybrid assembly option 2: Unicycler
- ```bash
- snakemake --configfile config.yaml _all_draft2
- ```
 
-4. Assembly evaluation and comparison
+    `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
+  ```bash
+  snakemake --configfile config.yaml _all_draft2
+  ```
+
+4. Assembly assess and comparison
+
+  * Metrics description
+    
+    `Misjoins`: locations where two adjacent sequences in the assembly should be split apart and placed at distinct locations in order to match the reference.
+
+    `Relocation`: a misjoin where a segments needs to be moved elsewhere on the chromosome.
+    
+     `Misassemblies`: QUAST categories misassemblies as either local (less than 1kbp discrepancy) or extensive (more than 1 kbp discrepancy)
+    
+    A good reference guide for interpretting the dot plot is available [ here](http://mummer.sourceforge.net/manual/AlignmentTypes.pdf).
+    
+  * Some good tutorials:
+    - Align two draft sequences using [ MUMmer](http://mummer.sourceforge.net/manual/#aligningdraft).
+    - Evaluate the assembly using [ MUMmer](http://nanopolish.readthedocs.io/en/latest/quickstart_consensus.html).
+    - Assembly evaluation with [ QUAST](http://denbi-nanopore-training-course.readthedocs.io/en/latest/assembly_qc/quast.html)
+    - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
+    - Assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
+   
+  ```bash
+  ## set up for Quast
+  cd local
+  git clone https://github.com/lucian-ilie/E-MEM.git
+  cd E-MEM
+  make
+  snakemake --configfile config.yaml _all_comp
+  ```
