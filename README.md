@@ -34,3 +34,21 @@
   ```
 
 ## Usage
+
+1. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
+  ```bash
+  snakemake --configfile config.yml _all_preprocess
+  ```
+ 
+2. Hybrid assembly option 1: Canu + Nanopolish + Circlator + Pilon
+  ```bash
+  snakemake --configfile config.yaml _all_draft1
+  ```
+  
+3. Hybrid assembly option 2: Unicycler
+ ```bash
+ snakemake --configfile config.yaml _all_draft2
+ ```
+
+4. Assembly evaluation and comparison
+ 
