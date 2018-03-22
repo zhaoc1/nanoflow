@@ -94,5 +94,5 @@ rule asm_stats_subsample:
   config['project_dir'] + '/reports/03_subsampled_reads/{barcode}/reads.asm.stats'
  shell:
   """
-  assembly-stats {input} > {output}
+  assembly-stats <(gunzip -c {input}) > {output}
   """
