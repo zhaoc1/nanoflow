@@ -55,6 +55,8 @@
 
 4. Assembly assess and comparison
 
+  * Metrics description
+    
     `Misjoins`: locations where two adjacent sequences in the assembly should be split apart and placed at distinct locations in order to match the reference.
 
     `Relocation`: a misjoin where a segments needs to be moved elsewhere on the chromosome.
@@ -63,7 +65,14 @@
     
     A good reference guide for interpretting the dot plot is available [ here](http://mummer.sourceforge.net/manual/AlignmentTypes.pdf).
     
-    TODO: assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109).
+  * Some good tutorials:
+    - Align two draft sequences using [ MUMmer](http://mummer.sourceforge.net/manual/#aligningdraft).
+    
+    - Evaluate the assembly using [ MUMmer](http://nanopolish.readthedocs.io/en/latest/quickstart_consensus.html).
+    
+    - Assembly evaluation with [ QUAST](http://denbi-nanopore-training-course.readthedocs.io/en/latest/assembly_qc/quast.html)
+    
+    - Assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
    
   ```bash
   snakemake --configfile config.yaml _all_comp
