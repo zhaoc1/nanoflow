@@ -13,7 +13,7 @@ with open(config['barcodes_fp']) as f:
  BARCODES = f.read().splitlines()
 
 include: "preprocess.rules"
-#include: "draft1.rules"
+include: "draft1.rules"
 #include: "draft2.rules"
 
 #onsuccess:

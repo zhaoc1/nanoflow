@@ -14,4 +14,5 @@ biopython
 pysam
 racon
 java-jdk
-
+mummer
+gnuplot
