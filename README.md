@@ -40,12 +40,12 @@
   snakemake --configfile config.yml _all_preprocess
   ```
  
-2. Hybrid assembly option 1: Canu + Nanopolish + Circlator + Pilon
+2. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
   ```bash
   snakemake --configfile config.yaml _all_draft1
   ```
   
-3. Hybrid assembly option 2: Unicycler
+3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler)
 
     `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
