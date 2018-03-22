@@ -46,9 +46,25 @@
   ```
   
 3. Hybrid assembly option 2: Unicycler
- ```bash
- snakemake --configfile config.yaml _all_draft2
- ```
 
-4. Assembly evaluation and comparison
+    `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
+  ```bash
+  snakemake --configfile config.yaml _all_draft2
+  ```
+
+4. Assembly assess and comparison
+
+    `Misjoins`: locations where two adjacent sequences in the assembly should be split apart and placed at distinct locations in order to match the reference.
+
+    `Relocation`: a misjoin where a segments needs to be moved elsewhere on the chromosome.
+    
+     `Misassemblies`: QUAST categories misassemblies as either local (less than 1kbp discrepancy) or extensive (more than 1 kbp discrepancy)
+    
+    A good reference guide for interpretting the dot plot is available [ here](http://mummer.sourceforge.net/manual/AlignmentTypes.pdf).
+    
+    TODO: assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109).
+   
+  ```bash
+  snakemake --configfile config.yaml _all_comp
+  ```
