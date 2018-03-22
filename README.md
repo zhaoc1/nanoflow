@@ -6,11 +6,15 @@
   git clone https://github.com/ressy/conda-gcc5.git
   bash setup.py nanoflow
   ```
-2. Clone this repository into a local directory and activate minions environment
+2. Clone this repository into a local directory and activate `nanoflow` environment
   ```bash
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
   source activate nanoflow
+  
+  conda config --add channels defaults
+  conda config --add channels conda-forge
+  conda config --add channels bioconda
   conda install --file conda-requirements.txt
   ```
  
@@ -30,3 +34,21 @@
   ```
 
 ## Usage
+
+1. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
+  ```bash
+  snakemake --configfile config.yml _all_preprocess
+  ```
+ 
+2. Hybrid assembly option 1: Canu + Nanopolish + Circlator + Pilon
+  ```bash
+  snakemake --configfile config.yaml _all_draft1
+  ```
+  
+3. Hybrid assembly option 2: Unicycler
+ ```bash
+ snakemake --configfile config.yaml _all_draft2
+ ```
+
+4. Assembly evaluation and comparison
+ 
