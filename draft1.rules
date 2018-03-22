@@ -1,0 +1,262 @@
+####################
+## Hybrid Assembly Pipeline 1:
+## Canu + Nanopolish + Circlator + Pilon
+####################
+
+rule _all_draft1:
+ input:
+  expand(config['project_dir'] + '/reports/{step}/{barcode}/asm.aln.tsv', 
+    step=['04_canu','05_nanopolish','07_pilon'], barcode=BARCODES)
+
+## Long Reads Assembler: Canu
+rule canu_asm:
+ input:
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz'
+ output:
+  config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta'
+ params:
+  outdir = config['project_dir'] + '/04_canu/{barcode}'
+ threads: 8
+ shell:
+  """
+  LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" canu \
+   -p canu -d {params.outdir} genomeSize={config[canu_genome_size]} \
+   -nanopore-raw {input.reads} correctedErrorRate=0.16 useGrid=false \
+   maxMemory=12G maxThreads=8 gnuplotTested=true
+  """
+
+rule assess_canu:
+ input:
+  genome = config['project_dir'] + '/' + config['genome_fp'],
+  contigs = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
+  python_chop_fp = config['basecalling_cmp_fp'] + '/chop_up_assembly.py',
+  python_ident_fp = config['basecalling_cmp_fp'] + '/read_length_identity.py'
+ output:
+  asm_pieces = config['project_dir'] + '/04_canu/{barcode}/asm_pieces.fasta',
+  asm_aln = config['project_dir'] + '/04_canu/{barcode}/asm.aln.paf',
+  asm_table = config['project_dir'] + '/reports/04_canu/{barcode}/asm.aln.tsv',
+  correctedReads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
+ threads: 2
+ shell:
+  """
+  python {input.python_chop_fp} {input.contigs} 10000 > {output.asm_pieces}
+  minimap2 -k12 -t {threads} -c {input.genome} {output.asm_pieces} > {output.asm_aln}
+  python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
+  """
+
+## Prepare sequencing summary for fast nanopolish index fast5 files
+rule collect_sequencing_summary:
+ input:
+  expand(config['raw_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/sequencing_summary.txt', barcode=BARCODES),
+  config['raw_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/sequencing_summary.txt'
+ output:
+  config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
+ run:
+  with open(output[0],'w') as out:
+   for item in input:
+    out.write("%s\n" % os.path.abspath(item))
+
+## Index the reads after preprocessing
+rule nanopolish_index:
+ input:
+#  fast5_fp1 = config['raw_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
+#  fast5_fp2 = config['raw_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}'
+  fast5_fp1 = config['raw_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/workspace/pass/{barcode}',
+  fast5_fp2 = config['raw_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/workspace/pass/{barcode}',
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  nanopolish_fp = config['nanopolish_fp'] + '/nanopolish',
+  summary = config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
+ output:
+  config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb'
+ shell:
+  """
+  if [[ {input.fast5_fp1} -ef {input.fast5_fp2} ]]; then
+   LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {input.nanopolish_fp} index -d {input.fast5_fp1} -f {input.summary} {input.reads}
+  else
+   LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {input.nanopolish_fp} index -d {input.fast5_fp1} -d {input.fast5_fp2} -f {input.summary} {input.reads}
+  fi
+  """
+
+## 20180315: technically speaking, bwa's long reads mapping functionality tranferred to minimap2
+rule bwa_index_canu:
+ input:
+  contigs_canu = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta'
+ output:
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
+  index = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta.amb'
+ shell:
+  """
+  cp {input.contigs_canu} {output}
+  bwa index {output.contigs}
+  """
+
+rule bwa_align_canu:
+ input:
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
+  contigs_index = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta.amb'
+ output:
+  sorted_bam = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam',
+  sorted_bai = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam.bai'
+ params:
+  temp = config['project_dir'] + '/05_nanopolish/{barcode}/reads.tmp'
+ threads: 8
+ shell:
+  """
+  bwa mem -x ont2d -t 8 {input.contigs} {input.reads} | \
+   samtools sort -o {output.sorted_bam} -T {params.temp} -
+  samtools index {output.sorted_bam}
+  """
+
+## minimap2 replace the bwa's functionality for long reads mapping
+rule minimap2_align:
+ input:
+  contigs_canu = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
+ output:
+  contigs = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/canu.contigs.fasta',
+  sorted_bam = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.sorted.bam',
+  sorted_bai = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.sorted.bam.bai'
+ params:
+  temp = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.tmp'
+ threads: 8
+ shell:
+  """
+  cp {input.contigs_canu} {output.contigs}
+  minimap2 -x map10k -a -t {threads} {output.contigs_nanopolish} {input.reads} | \
+   samtools sort -o {output.sorted_bam} -T {params.temp} -
+  samtools index {output.sorted_bam}
+  """
+
+## THIS rule need to be updated based on the other Snakefile_0314
+rule nanopolish_consensus:
+ input:
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  bam = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam',
+  bai = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam.bai',
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
+  makerange_fp = config['nanopolish_fp'] + '/scripts/nanopolish_makerange.py',
+  merge_fp = config['nanopolish_fp'] + '/scripts/nanopolish_merge.py'
+ output:
+  config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta'
+ params:
+  results_fp = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.results',
+  polished_fp = config['project_dir'] + '/05_nanopolish/{barcode}/polished.results'
+ threads: 8
+ shell:
+  """
+  python {input.makerange_fp} {input.contigs} | \
+   parallel --results {params.results_fp} -P 8 \
+    LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" nanopolish variants \
+    --consensus {params.polished_fp}/polished.{{1}}.fa \
+    -w {{1}} -r {input.reads} -b {input.bam} -g {input.contigs} \
+    -t 4 --min-candidate-frequency 0.1 --methylation-aware=dcm,dam
+  
+  python {input.merge_fp} {params.polished_fp}/polished.*.fa > {output}
+  """
+
+rule assess_nanopolish:
+ input:
+  genome = config['project_dir'] + '/' + config['genome_fp'],
+  contigs_nanopolish = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta',
+  python_chop_fp = config['basecalling_cmp_fp'] + '/chop_up_assembly.py',
+  python_ident_fp = config['basecalling_cmp_fp'] + '/read_length_identity.py'
+ output:
+  asm_pieces = config['project_dir'] + '/05_nanopolish/{barcode}/asm_pieces.fasta',
+  asm_aln = config['project_dir'] + '/05_nanopolish/{barcode}/asm.aln.paf',
+  asm_table = config['project_dir'] + '/reports/05_nanopolish/{barcode}/asm.aln.tsv'
+ threads: 2
+ shell:
+  """
+  python {input.python_chop_fp} {input.contigs_nanopolish} 10000 > {output.asm_pieces}
+  minimap2 -x map10k -t {threads} -c {input.genome} {output.asm_pieces} > {output.asm_aln}
+  python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
+  """
+
+## Circlator: trim overhangs and circularize contigs
+rule run_circlator:
+ input:
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta',
+  correctedReads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
+ output:
+  contigs = config['project_dir'] + '/06_circlator/{barcode}/circlator.contigs.fasta',
+ params:
+  outdir = config['project_dir'] + '/06_circlator/{barcode}',
+  contigs = config['project_dir'] + '/06_circlator/{barcode}/06.fixstart.fasta',
+ threads: 4
+ shell:
+  """
+  circlator all --merge_min_id 85 --merge_breaklen 1000 \
+   --threads 4 --verbose --assembler canu \
+   {input.contigs} {input.correctedReads} {params.outdir}
+  cp {params.contigs} {output.contigs}
+  """
+
+## Pilon: improve draft assembly using short reads
+rule bwa_index_pilon:
+ input:
+  contigs = config['project_dir'] + '/06_circlator/{barcode}/circlator.contigs.fasta'
+ output:
+  contigs = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta',
+  contigs_index = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta.amb'
+ shell:
+  """
+  cp {input.contigs} {output.contigs}
+  bwa index {output.contigs} 
+  """
+
+rule bwa_aln_pilon:
+ input:
+  R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
+  R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
+  contigs = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta',
+  contigs_index = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta.amb'
+ output:
+  sorted_bam = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam',
+  sorted_bai = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam.bai'
+ params:
+  temp = config['project_dir'] + '/07_pilon/{barcode}/reads.tmp'
+ threads: 8
+ shell:
+  """
+  bwa mem -t {threads} {input.contigs} {input.R1} {input.R2} | \
+   samtools sort -o {output.sorted_bam} -T {params.temp} -
+  samtools index {output.sorted_bam}
+  """
+
+rule run_pilon:
+ input:
+  contigs = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta',
+  aln_bam = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam',
+  aln_bai = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam.bai'
+ output:
+  draft_v1 = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta'
+ params:
+  outdir = config['project_dir'] + '/07_pilon/{barcode}'
+ threads: 8 
+ shell:
+  """
+  pilon --genome {input.contigs} --frags {input.aln_bam} \
+   --fix bases --changes --tracks \
+   --threads {threads} --outdir {params.outdir}
+  """
+
+rule assess_pilon:
+ input:
+  genome = config['project_dir'] + '/' + config['genome_fp'],
+  draft_v1 = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta',
+  python_chop_fp = config['basecalling_cmp_fp'] + '/chop_up_assembly.py',
+  python_ident_fp = config['basecalling_cmp_fp'] + '/read_length_identity.py'
+ output:
+  asm_pieces = config['project_dir'] + '/07_pilon/{barcode}/asm_pieces.fasta',
+  asm_aln = config['project_dir'] + '/07_pilon/{barcode}/asm.aln.paf',
+  asm_table = config['project_dir'] + '/reports/07_pilon/{barcode}/asm.aln.tsv'
+ threads: 2
+ shell:
+  """
+  python {input.python_chop_fp} {input.draft_v1} 10000 > {output.asm_pieces}
+  minimap2 -x map10k -t {threads} -c {input.genome} {output.asm_pieces} > {output.asm_aln}
+  python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
+  """
