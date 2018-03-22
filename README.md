@@ -31,6 +31,11 @@
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
   make
+  
+  ## set up for Quast
+  git clone https://github.com/lucian-ilie/E-MEM.git
+  cd E-MEM
+  make
   ```
 
 ## Usage
@@ -40,12 +45,12 @@
   snakemake --configfile config.yml _all_preprocess
   ```
  
-2. Hybrid assembly option 1: Canu + Nanopolish + Circlator + Pilon
+2. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
   ```bash
   snakemake --configfile config.yaml _all_draft1
   ```
   
-3. Hybrid assembly option 2: Unicycler
+3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler)
 
     `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
@@ -72,11 +77,6 @@
     - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
     - Assembly to assembly comparisons using [ minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
    
-  ```bash
-  ## set up for Quast
-  cd local
-  git clone https://github.com/lucian-ilie/E-MEM.git
-  cd E-MEM
-  make
-  snakemake --configfile config.yaml _all_comp
+  ```bash  
+  snakemake --configfile config.yaml _all_comp --use-conda
   ```
