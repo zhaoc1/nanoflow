@@ -78,5 +78,6 @@
   git clone https://github.com/lucian-ilie/E-MEM.git
   cd E-MEM
   make
-  snakemake --configfile config.yaml _all_comp
+  
+  snakemake --configfile config.yaml _all_comp --use-conda
   ```
