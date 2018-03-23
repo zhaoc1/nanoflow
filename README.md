@@ -60,13 +60,13 @@
 
   * Metrics description
     
-    `Misjoins`: locations where two adjacent sequences in the assembly should be split apart and placed at distinct locations in order to match the reference.
+    * `Misjoins`: locations where two adjacent sequences in the assembly should be split apart and placed at distinct locations in order to match the reference.
 
-    `Relocation`: a misjoin where a segments needs to be moved elsewhere on the chromosome.
+    * `Relocation`: a misjoin where a segments needs to be moved elsewhere on the chromosome.
     
-     `Misassemblies`: QUAST categories misassemblies as either local (less than 1kbp discrepancy) or extensive (more than 1 kbp discrepancy)
+     * `Misassemblies`: QUAST categories misassemblies as either local (less than 1kbp discrepancy) or extensive (more than 1 kbp discrepancy)
     
-    A good reference guide for interpretting the dot plot is available [ here](http://mummer.sourceforge.net/manual/AlignmentTypes.pdf).
+  * A good reference guide for interpretting the dot plot is available [ here](http://mummer.sourceforge.net/manual/AlignmentTypes.pdf).
     
   * Some good tutorials:
     - Align two draft sequences using [ MUMmer](http://mummer.sourceforge.net/manual/#aligningdraft).
