@@ -44,6 +44,8 @@
 2. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
   ```bash
   snakemake --configfile config.yaml _all_draft1
+  ## command to submit jobs to Respublica
+  snakemake -j 3 --configfile config.yml --cluster-config cluster.json -w 90 --notemp -p -c "qsub -cwd -r n -V -l h_vmem={cluster.h_vmem} -l m_mem_free={cluster.m_mem_free} -pe smp {threads}" _all_draft1
   ```
   
 3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler)
