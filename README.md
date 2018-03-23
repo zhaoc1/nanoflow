@@ -50,7 +50,7 @@
   
 3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler)
 
-    `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
+   * `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
   ```bash
   snakemake --configfile config.yaml _all_draft2
@@ -78,3 +78,13 @@
   ```bash  
   snakemake --configfile config.yaml _all_comp --use-conda
   ```
+  
+ 5. IGV: short/long reads mapped to draft assembly
+   
+   * Refer to the subworkflow of [ sunbeam](http://sunbeam.readthedocs.io/en/latest/): [ sbx_igv]
+(https://github.com/sunbeam-labs/sbx_igv)
+   
+   ```bash
+   snakemake --configfile config.yaml _all_map_igv
+   ```
+   
