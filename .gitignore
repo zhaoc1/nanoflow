@@ -1,3 +1,5 @@
 local/
 config_*.yml
 .snakemake/
+__pycache__/
+*~

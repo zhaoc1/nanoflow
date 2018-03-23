@@ -4,3 +4,4 @@ dependencies:
  - python=2.7
  - biopython
  - quast
+ - prokka
