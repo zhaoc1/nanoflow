@@ -81,8 +81,7 @@
   
  5. IGV: short/long reads mapped to draft assembly
    
-   * Refer to the subworkflow of [ sunbeam](http://sunbeam.readthedocs.io/en/latest/): [ sbx_igv]
-(https://github.com/sunbeam-labs/sbx_igv)
+   * Refer to the subworkflow of [ sunbeam](http://sunbeam.readthedocs.io/en/latest/): [ sbx_igv](https://github.com/sunbeam-labs/sbx_igv)
    
    ```bash
    snakemake --configfile config.yaml _all_map_igv
