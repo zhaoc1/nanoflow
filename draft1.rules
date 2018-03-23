@@ -77,26 +77,14 @@ rule nanopolish_index:
   fi
   """
 
-## 20180315: technically speaking, bwa's long reads mapping functionality tranferred to minimap2
-rule bwa_index_canu:
+## Switch to Minimap2 alignment from BWA
+rule minimap2_align_nanopolish:
  input:
-  contigs_canu = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta'
- output:
-  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
-  index = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta.amb'
- shell:
-  """
-  cp {input.contigs_canu} {output}
-  bwa index {output.contigs}
-  """
-
-rule bwa_align_canu:
- input:
+  contigs_canu = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
-  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
-  contigs_index = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta.amb'
  output:
+  contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
   sorted_bam = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam',
   sorted_bai = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam.bai'
  params:
@@ -104,33 +92,13 @@ rule bwa_align_canu:
  threads: 8
  shell:
   """
-  bwa mem -x ont2d -t 8 {input.contigs} {input.reads} | \
-   samtools sort -o {output.sorted_bam} -T {params.temp} -
-  samtools index {output.sorted_bam}
-  """
-
-## minimap2 replace the bwa's functionality for long reads mapping
-rule minimap2_align:
- input:
-  contigs_canu = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
-  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
-  reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
- output:
-  contigs = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/canu.contigs.fasta',
-  sorted_bam = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.sorted.bam',
-  sorted_bai = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.sorted.bam.bai'
- params:
-  temp = config['project_dir'] + '/05_nanopolish_minimap2/{barcode}/reads.tmp'
- threads: 8
- shell:
-  """
   cp {input.contigs_canu} {output.contigs}
-  minimap2 -x map10k -a -t {threads} {output.contigs_nanopolish} {input.reads} | \
+  minimap2 -ax map-ont -t {threads} {output.contigs} {input.reads} | \
    samtools sort -o {output.sorted_bam} -T {params.temp} -
   samtools index {output.sorted_bam}
   """
 
-## THIS rule need to be updated based on the other Snakefile_0314
+## Polish a genome assembly
 rule nanopolish_consensus:
  input:
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
@@ -147,9 +115,10 @@ rule nanopolish_consensus:
  threads: 8
  shell:
   """
+  mkdir {params.polished_fp}
   python {input.makerange_fp} {input.contigs} | \
    parallel --results {params.results_fp} -P 8 \
-    LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" nanopolish variants \
+    LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {config[nanopolish_fp]}/nanopolish variants \
     --consensus {params.polished_fp}/polished.{{1}}.fa \
     -w {{1}} -r {input.reads} -b {input.bam} -g {input.contigs} \
     -t 4 --min-candidate-frequency 0.1 --methylation-aware=dcm,dam
@@ -176,6 +145,7 @@ rule assess_nanopolish:
   """
 
 ## Circlator: trim overhangs and circularize contigs
+## TODO: submit an issue for nanopore data
 rule run_circlator:
  input:
   contigs = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta',
@@ -195,25 +165,15 @@ rule run_circlator:
   """
 
 ## Pilon: improve draft assembly using short reads
-rule bwa_index_pilon:
- input:
-  contigs = config['project_dir'] + '/06_circlator/{barcode}/circlator.contigs.fasta'
- output:
-  contigs = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta',
-  contigs_index = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta.amb'
- shell:
-  """
-  cp {input.contigs} {output.contigs}
-  bwa index {output.contigs} 
-  """
-
-rule bwa_aln_pilon:
+rule minimap2_align_pilon:
  input:
   R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
   R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
-  contigs = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta',
-  contigs_index = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta.amb'
+  contigs = config['project_dir'] + '/06_circlator/{barcode}/circlator.contigs.fasta',
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
  output:
+  contigs = config['project_dir'] + '/07_pilon/{barcode}/contigs.fasta',
   sorted_bam = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam',
   sorted_bai = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam.bai'
  params:
@@ -221,7 +181,8 @@ rule bwa_aln_pilon:
  threads: 8
  shell:
   """
-  bwa mem -t {threads} {input.contigs} {input.R1} {input.R2} | \
+  cp {input.contigs} {output.contigs}
+  minimap2 -ax map-ont -t {threads} {output.contigs} {input.reads} | \
    samtools sort -o {output.sorted_bam} -T {params.temp} -
   samtools index {output.sorted_bam}
   """
