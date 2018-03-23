@@ -11,10 +11,6 @@
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
   source activate nanoflow
-  
-  conda config --add channels defaults
-  conda config --add channels conda-forge
-  conda config --add channels bioconda
   conda install --file conda-requirements.txt
   ```
  
