@@ -5,3 +5,4 @@ dependencies:
  - biopython
  - quast
  - prokka
+ - tbl2asn

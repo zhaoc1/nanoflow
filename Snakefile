@@ -5,6 +5,7 @@
 ####
 
 import os
+#from sbx_igv import * 
 
 configfile: 'config.yaml'
 workdir: config['project_dir']
@@ -12,9 +13,11 @@ workdir: config['project_dir']
 with open(config['barcodes_fp']) as f:
  BARCODES = f.read().splitlines()
 
-include: "preprocess.rules"
-include: "draft1.rules"
+#include: "preprocess.rules"
+#include: "draft1.rules"
 #include: "draft2.rules"
+include: "asm_comp.rules"
+include: "mapping.rules"
 
 #onsuccess:
 # print("Workflow finished, no error")
