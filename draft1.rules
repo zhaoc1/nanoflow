@@ -145,23 +145,22 @@ rule assess_nanopolish:
   """
 
 ## Circlator: trim overhangs and circularize contigs
-## TODO: submit an issue for nanopore data
 rule run_circlator:
  input:
   contigs = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta',
   correctedReads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
  output:
-  contigs = config['project_dir'] + '/06_circlator/{barcode}/circlator.contigs.fasta',
+  config['project_dir'] + '/06_circlator/.{barcode}_done_circlator',
  params:
   outdir = config['project_dir'] + '/06_circlator/{barcode}',
-  contigs = config['project_dir'] + '/06_circlator/{barcode}/06.fixstart.fasta',
+  contigs = config['project_dir'] + '/06_circlator/{barcode}/06.fixstart.fasta'
  threads: 4
  shell:
   """
-  circlator all --merge_min_id 85 --merge_breaklen 1000 \
-   --threads 4 --verbose --assembler canu \
+  circlator all --merge_min_id 85 --merge_breaklen 1000 --threads 4 --verbose \
+  --assembler canu --data_type nanopore-corrected --bwa_opts "-x ont2d" \
    {input.contigs} {input.correctedReads} {params.outdir}
-  cp {params.contigs} {output.contigs}
+  touch {output}
   """
 
 ## Pilon: improve draft assembly using short reads
@@ -169,7 +168,7 @@ rule minimap2_align_pilon:
  input:
   R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
   R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
-  contigs = config['project_dir'] + '/06_circlator/{barcode}/circlator.contigs.fasta',
+  circlator_flag = config['project_dir'] + '/06_circlator/.{barcode}_done_circlator',
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
  output:
@@ -177,11 +176,12 @@ rule minimap2_align_pilon:
   sorted_bam = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam',
   sorted_bai = config['project_dir'] + '/07_pilon/{barcode}/reads.sorted.bam.bai'
  params:
+  contigs = config['project_dir'] + '/06_circlator/{barcode}/06.fixstart.fasta',
   temp = config['project_dir'] + '/07_pilon/{barcode}/reads.tmp'
  threads: 8
  shell:
   """
-  cp {input.contigs} {output.contigs}
+  cp {params.contigs} {output.contigs}
   minimap2 -ax map-ont -t {threads} {output.contigs} {input.reads} | \
    samtools sort -o {output.sorted_bam} -T {params.temp} -
   samtools index {output.sorted_bam}

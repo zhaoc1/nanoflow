@@ -13,9 +13,9 @@ workdir: config['project_dir']
 with open(config['barcodes_fp']) as f:
  BARCODES = f.read().splitlines()
 
-#include: "preprocess.rules"
-#include: "draft1.rules"
-#include: "draft2.rules"
+include: "preprocess.rules"
+include: "draft1.rules"
+include: "draft2.rules"
 include: "asm_comp.rules"
 include: "mapping.rules"
 

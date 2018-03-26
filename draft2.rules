@@ -38,7 +38,7 @@ rule assess_unicycler:
  threads: 2
  shell:
   """
-  python {input.python_chop_fp} {input.draft_v1} 10000 > {output.asm_pieces}
+  python {input.python_chop_fp} {input.draft_v2} 10000 > {output.asm_pieces}
   minimap2 -x map10k -t {threads} -c {input.genome} {output.asm_pieces} > {output.asm_aln}
   python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
   """
