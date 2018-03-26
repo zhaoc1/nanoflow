@@ -13,7 +13,8 @@ rule canu_asm:
  input:
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz'
  output:
-  config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta'
+  config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
+  config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
  params:
   outdir = config['project_dir'] + '/04_canu/{barcode}'
  threads: 8
@@ -34,8 +35,7 @@ rule assess_canu:
  output:
   asm_pieces = config['project_dir'] + '/04_canu/{barcode}/asm_pieces.fasta',
   asm_aln = config['project_dir'] + '/04_canu/{barcode}/asm.aln.paf',
-  asm_table = config['project_dir'] + '/reports/04_canu/{barcode}/asm.aln.tsv',
-  correctedReads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
+  asm_table = config['project_dir'] + '/reports/04_canu/{barcode}/asm.aln.tsv'
  threads: 2
  shell:
   """
@@ -115,7 +115,7 @@ rule nanopolish_consensus:
  threads: 8
  shell:
   """
-  mkdir {params.polished_fp}
+  mkdir -p {params.polished_fp}
   python {input.makerange_fp} {input.contigs} | \
    parallel --results {params.results_fp} -P 8 \
     LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {config[nanopolish_fp]}/nanopolish variants \
