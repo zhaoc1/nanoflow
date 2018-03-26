@@ -52,24 +52,41 @@ rule eval_assembly:
   show-coords -r -c -l {params.prefix3}.delta > {output.draft1_draft2}
   """
 
+rule run_prokka:
+ input:
+  config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta'
+ output:
+  fna = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon/pilon.fasta',
+  gff = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon/pilon.gff'
+ params:
+  outdir = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon'
+ threads: 4
+ conda:
+  config['quast_yaml_fp']
+ shell:
+  """
+  cp {input} {output.fna}
+  prokka --kingdom Bacteria --outdir {params.outdir} --prefix pilon \
+         --locustag pilon --force {output.fna}
+  """ 
+
 rule run_quast:
  input:
-  ref = config['project_dir'] + '/' + config['genome_fp'],
-  gff = config['project_dir'] + '/' + config['gene_fp'],
+  gff = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon/pilon.gff',
   draft1 = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta',
   draft2 = config['project_dir'] + '/08_unicycler/{barcode}/assembly.fasta'
  output:
-  config['project_dir'] + '/reports/08_eval/quast/{barcode}/quast_results/quast.log',
+  config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/quast.log',
  params:
-  outdir = config['project_dir'] + '/reports/08_eval/quast/{barcode}/quast_results'
+  outdir = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}'
  threads: 4
  conda: 
   config['quast_yaml_fp']
  shell:
   """
-  quast.py -t {threads} --gene-finding --gage -o {params.outdir} -R {input.ref} -G {input.gff} {input.draft1} {input.draft1}
+  quast.py -t {threads} --gene-finding --gage -o {params.outdir} -R {input.draft1} -G {input.gff} {input.draft1}
   """
 
 rule _all_quast:
  input:
-   config['project_dir'] + '/reports/08_eval/quast/barcode03/quast_results/quast.log'
+   config['project_dir'] + '/reports/08_eval/quast_results/barcode03/quast.log'

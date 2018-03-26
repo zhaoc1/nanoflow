@@ -1,27 +1,20 @@
 admins: zhaocy.dut@gmail.com 
-project_dir: /scr1/users/zhaoc1/cdiff_run9_20180309
+project_dir: /path/to/dir/you/want/to/save/the/results
+ 
+raw_fast5_fp1: /path/to/dir/fast5/files/1
+raw_fast5_fp2: /path/to/dir/fast5/files/2/happens/when/no/prearrangment/on/local/computer/memory
 
-## standard input
-raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run13_cdiff_t8_t11_t12_t14_t16/batch2of3
-raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run13_cdiff_t8_t11_t12_t14_t16/batch3of3
-
-## run9: bad formated input
-raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run9_cdiff_t3_t4_t5/first_batch_basecalled_albacore_v2.1
-raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run9_cdiff_t3_t4_t5/second_batch_raw_basecalled_albacore_v2.1
-
-## run10: 
-raw_fast5_fp1: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_t10/20171031_1428_t1_t6_t7_t9_t10
-raw_fast5_fp2: /mnt/isilon/microbiome/incoming/nanopore/run10_cdiff_t1_t6_t7_t9_t10/20171031_1428_t1_t6_t7_t9_t10
-
+## put these in your project_dir, will be our workdir for snakemake
 barcodes_fp: barcodes.txt
 genome_fp: GCF_000932055.fa
 gene_fp: GCF_000932055.gff
 short_reads_fp: short_reads_truseq
 
+## helper scripts
 basecalling_cmp_fp: $HOME/nanoflow/local/Basecalling-comparison
-
-canu_fp: $HOME/nanoflow/local/canu/Linux-amd64/bin/canu
 canu_genome_size: 4.3m
-
 nanopolish_fp: $HOME/nanoflow/local/nanopolish
-nanopolish_scripts_fp: $HOME/nanoflow/local/nanopolish/scripts
+quast_yaml_fp: $HOME/nanoflow/quast.yaml
+igv_prefs : {ENABLE_ANTIALIASING: true, NAME_PANEL_WIDTH: 360, SAM.MAX_VISIBLE_RANGE: 1000}
+keep_unaligned: false
+
