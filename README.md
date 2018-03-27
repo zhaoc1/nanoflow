@@ -48,7 +48,7 @@
   snakemake -j 3 --configfile config.yml --cluster-config cluster.json -w 90 --notemp -p -c "qsub -cwd -r n -V -l h_vmem={cluster.h_vmem} -l m_mem_free={cluster.m_mem_free} -pe smp {threads}" _all_draft1
   ```
   
-3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler)
+3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly)
 
    * `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
