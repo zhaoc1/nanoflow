@@ -33,11 +33,6 @@
   cd Unicycler
   python3 setup.py install
   
-  ## Unicycler
-  git clone https://github.com/rrwick/Unicycler.git
-  cd Unicycler
-  python3 setup.py install
-  
   ## set up for Quast
   git clone https://github.com/lucian-ilie/E-MEM.git
   cd E-MEM
