@@ -3,13 +3,13 @@
 ## MUMmer + QUAST (+ minimap2)
 ####################
 
-#rule _test_eval:
-# input:
-#  expand(config['project_dir'] + '/reports/08_eval/dnadiff/{barcode}/{prefix}.report',
-#  barcode=BARCODES, prefix = ['ref_draft1', 'ref_draft2']),
-#  expand(config['project_dir'] + '/reports/08_eval/nucmer/{barcode}/{prefix}}.coords',
-#  barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2'])
-
+rule _all_eval:
+ input:
+  expand(config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/{prefix}.report',
+  barcode=BARCODES, prefix = ['ref_draft1', 'ref_draft2']),
+  expand(config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/{prefix}}.coords',
+  barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2']),
+  expand(config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/quast.log', barcode=BARCODES)
 
 rule eval_assembly:
  input:
@@ -17,15 +17,15 @@ rule eval_assembly:
   draft1 = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta',
   draft2 = config['project_dir'] + '/08_unicycler/{barcode}/assembly.fasta'
  output:
-  draft1 = config['project_dir'] + '/reports/08_eval/dnadiff/{barcode}/ref_draft1.report',
-  draft2 = config['project_dir'] + '/reports/08_eval/dnadiff/{barcode}/ref_draft2.report',
-  repeats = config['project_dir'] + '/reports/08_eval/nucmer/{barcode}/ref.repeats',
-  ref_draft1 = config['project_dir'] + '/reports/08_eval/nucmer/{barcode}/ref_draft1.coords',
-  ref_draft2 = config['project_dir'] + '/reports/08_eval/nucmer/{barcode}/ref_draft2.coords',
-  draft1_draft2 = config['project_dir'] + '/reports/08_eval/nucmer/{barcode}/draft1_draft2.coords',
+  repeats = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref.repeats',
+  draft1 = config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/ref_draft1.report',
+  draft2 = config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/ref_draft2.report',
+  ref_draft1 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref_draft1.coords',
+  ref_draft2 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref_draft2.coords',
+  draft1_draft2 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/draft1_draft2.coords',
  params:
-  out_dir1 = config['project_dir'] + '/reports/08_eval/dnadiff/{barcode}',
-  out_dir2 = config['project_dir'] + '/reports/08_eval/nucmer/{barcode}',
+  out_dir1 = config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}',
+  out_dir2 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}',
   prefix1 = 'ref_draft1',
   prefix2 = 'ref_draft2',
   prefix3 = 'draft1_draft2'
@@ -38,13 +38,13 @@ rule eval_assembly:
   
   cd {params.out_dir2}
   ## find exact tandem repeats of length 100 or greater in a single sequence seq.fasta
-  repeat-match -n 100 {input.refgenome} 100 > {output.repeats}
+  repeat-match -n 100 {input.refgenome} > {output.repeats}
 
   ## mapping a draft sequence to a finished sequence
   nucmer -maxmatch -c 100 -p {params.prefix1} {input.refgenome} {input.draft1}
   show-coords -r -c -l {params.prefix1}.delta > {output.ref_draft1}
   
-  nucmer -maxmatch -c 100 -p {params.prefix2} {input.refgenome} {input.draftw}
+  nucmer -maxmatch -c 100 -p {params.prefix2} {input.refgenome} {input.draft2}
   show-coords -r -c -l {params.prefix2}.delta > {output.ref_draft2}
   
   ## aligning two draft sequences
@@ -56,10 +56,10 @@ rule run_prokka:
  input:
   config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta'
  output:
-  fna = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon/pilon.fasta',
-  gff = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon/pilon.gff'
+  fna = config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/prokka_pilon/pilon.fasta',
+  gff = config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/prokka_pilon/pilon.gff'
  params:
-  outdir = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon'
+  outdir = config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/prokka_pilon'
  threads: 4
  conda:
   config['quast_yaml_fp']
@@ -72,13 +72,13 @@ rule run_prokka:
 
 rule run_quast:
  input:
-  gff = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/prokka_pilon/pilon.gff',
+  gff = config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/prokka_pilon/pilon.gff',
   draft1 = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta',
   draft2 = config['project_dir'] + '/08_unicycler/{barcode}/assembly.fasta'
  output:
-  config['project_dir'] + '/reports/08_eval/quast_results/{barcode}/quast.log',
+  config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/quast.log',
  params:
-  outdir = config['project_dir'] + '/reports/08_eval/quast_results/{barcode}'
+  outdir = config['project_dir'] + '/reports/09_eval/quast_results/{barcode}'
  threads: 4
  conda: 
   config['quast_yaml_fp']
@@ -87,6 +87,3 @@ rule run_quast:
   quast.py -t {threads} --gene-finding --gage -o {params.outdir} -R {input.draft1} -G {input.gff} {input.draft1}
   """
 
-rule _all_quast:
- input:
-   config['project_dir'] + '/reports/08_eval/quast_results/barcode03/quast.log'

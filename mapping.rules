@@ -9,7 +9,7 @@ from sbx_igv import *
 
 rule _all_mapping:
  input:
-  expand(config['project_dir'] + '/09_mapping/{barcode}/{draft}/{reads}.sorted.bam',
+  expand(config['project_dir'] + '/10_mapping/{barcode}/{draft}/{reads}.sorted.bam',
         barcode=['barcode03'],draft=['pilon','unicycler'], reads=['shortreads','subsampled','corrected'])
 
 rule bwa_index_draft:
@@ -17,10 +17,10 @@ rule bwa_index_draft:
   draft1 = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta',
   draft2 = config['project_dir'] + '/08_unicycler/{barcode}/assembly.fasta'
  output:
-  draft1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta',
-  draft2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta',
-  index1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta.amb',
-  index2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta.amb'
+  draft1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta',
+  draft2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta',
+  index1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta.amb',
+  index2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta.amb'
  shell:
   """
   cp {input.draft1} {output.draft1}
@@ -33,17 +33,17 @@ rule bwa_short_reads:
  input:
   R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
   R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
-  draft1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta',
-  draft2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta',
-  index1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta.amb',
-  index2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta.amb'
+  draft1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta',
+  draft2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta',
+  index1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta.amb',
+  index2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta.amb'
  output:
-  bam1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/shortreads.sorted.bam',
-  bam2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/shortreads.sorted.bam'
+  bam1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/shortreads.sorted.bam',
+  bam2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/shortreads.sorted.bam'
  threads: 4
  params:
-  temp1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/shortreads.tmp',
-  temp2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/shortreads.tmp',
+  temp1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/shortreads.tmp',
+  temp2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/shortreads.tmp',
  shell:
   """
   ## draft1: canu + nanopolish + circlator + pilon 
@@ -60,17 +60,17 @@ rule bwa_short_reads:
 rule minimap2_subsampled_reads:
  input:
    reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
-   draft1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta',
-   draft2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta',
-   index1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta.amb',
-   index2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta.amb' 
+   draft1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta',
+   draft2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta',
+   index1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta.amb',
+   index2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta.amb' 
  output:
-  bam1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/subsampled.sorted.bam',
-  bam2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/subsampled.sorted.bam'
+  bam1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/subsampled.sorted.bam',
+  bam2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/subsampled.sorted.bam'
  threads: 4
  params:
-  temp1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/subsampled.reads.tmp',
-  temp2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/subsampled.reads.tmp',
+  temp1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/subsampled.reads.tmp',
+  temp2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/subsampled.reads.tmp',
  shell:
   """
   minimap2 -ax map-ont -t {threads} {input.draft1} {input.reads} | \
@@ -85,17 +85,17 @@ rule minimap2_subsampled_reads:
 rule minimap2_corrected_reads:
  input:
    reads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz',
-   draft1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta',
-   draft2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta',
-   index1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta.amb',
-   index2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/draft2.fasta.amb' 
+   draft1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta',
+   draft2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta',
+   index1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta.amb',
+   index2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/draft2.fasta.amb' 
  output:
-  bam1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/corrected.sorted.bam',
-  bam2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/corrected.sorted.bam'
+  bam1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/corrected.sorted.bam',
+  bam2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/corrected.sorted.bam'
  threads: 4
  params:
-  temp1 = config['project_dir'] + '/09_mapping/{barcode}/pilon/corrected.reads.tmp',
-  temp2 = config['project_dir'] + '/09_mapping/{barcode}/unicycler/corrected.reads.tmp',
+  temp1 = config['project_dir'] + '/10_mapping/{barcode}/pilon/corrected.reads.tmp',
+  temp2 = config['project_dir'] + '/10_mapping/{barcode}/unicycler/corrected.reads.tmp',
  shell:
   """
   minimap2 -ax map-ont -t {threads} {input.draft1} {input.reads} | \
@@ -109,14 +109,14 @@ rule minimap2_corrected_reads:
 
 rule igv_plot:
  input:
-  genome = config['project_dir'] + '/09_mapping/{barcode}/pilon/draft1.fasta',
-  bams = expand(config['project_dir'] + '/09_mapping/{{barcode}}/pilon/{reads}.sorted.bam', reads=['shortreads','subsampled','corrected']),
-  bais = expand(config['project_dir'] + '/09_mapping/{{barcode}}/pilon/{reads}.sorted.bam.bai', reads=['shortreads','subsampled','corrected'])
+  genome = config['project_dir'] + '/10_mapping/{barcode}/pilon/draft1.fasta',
+  bams = expand(config['project_dir'] + '/10_mapping/{{barcode}}/pilon/{reads}.sorted.bam', reads=['shortreads','subsampled','corrected']),
+  bais = expand(config['project_dir'] + '/10_mapping/{{barcode}}/pilon/{reads}.sorted.bam.bai', reads=['shortreads','subsampled','corrected'])
  output:
-  config['project_dir'] + '/09_mapping/{barcode}/pilon/done.igv'
+  config['project_dir'] + '/10_mapping/{barcode}/pilon/done.igv'
  params:
   igv_prefs = config['igv_prefs'],
-  outdir = config['project_dir'] + '/09_mapping/{barcode}/pilon'
+  outdir = config['project_dir'] + '/10_mapping/{barcode}/pilon'
  run:
   segments = read_seq_ids(input.genome)
   for segment in segments:
@@ -126,5 +126,5 @@ rule igv_plot:
 
 rule _all_igv:
  input:
-  expand(config['project_dir'] + '/09_mapping/{barcode}/pilon/done.igv', 
+  expand(config['project_dir'] + '/10_mapping/{barcode}/pilon/done.igv', 
          barcode=["barcode03"])

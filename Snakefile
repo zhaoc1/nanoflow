@@ -5,7 +5,7 @@
 ####
 
 import os
-#from sbx_igv import * 
+from sbx_igv import * 
 
 configfile: 'config.yaml'
 workdir: config['project_dir']
@@ -16,7 +16,7 @@ with open(config['barcodes_fp']) as f:
 include: "preprocess.rules"
 include: "draft1.rules"
 include: "draft2.rules"
-include: "asm_comp.rules"
+include: "assess_asm.rules"
 include: "mapping.rules"
 
 #onsuccess:
