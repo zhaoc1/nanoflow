@@ -7,7 +7,7 @@ rule _all_eval:
  input:
   expand(config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/{prefix}.report',
   barcode=BARCODES, prefix = ['ref_draft1', 'ref_draft2']),
-  expand(config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/{prefix}}.coords',
+  expand(config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/{prefix}.coords',
   barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2']),
   expand(config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/quast.log', barcode=BARCODES)
 
@@ -86,4 +86,3 @@ rule run_quast:
   """
   quast.py -t {threads} --gene-finding --gage -o {params.outdir} -R {input.draft1} -G {input.gff} {input.draft1}
   """
-
