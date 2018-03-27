@@ -10,7 +10,7 @@ from sbx_igv import *
 rule _all_mapping:
  input:
   expand(config['project_dir'] + '/10_mapping/{barcode}/{draft}/{reads}.sorted.bam',
-        barcode=['barcode03'],draft=['pilon','unicycler'], reads=['shortreads','subsampled','corrected'])
+        barcode=BARCODES,draft=['pilon','unicycler'], reads=['shortreads','subsampled','corrected'])
 
 rule bwa_index_draft:
  input:
@@ -127,4 +127,4 @@ rule igv_plot:
 rule _all_igv:
  input:
   expand(config['project_dir'] + '/10_mapping/{barcode}/pilon/done.igv', 
-         barcode=["barcode03"])
+         barcode=BARCODES)
