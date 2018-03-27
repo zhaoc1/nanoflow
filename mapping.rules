@@ -10,7 +10,9 @@ from sbx_igv import *
 rule _all_igv_mapping:
  input:
   expand(config['project_dir'] + '/10_mapping/{barcode}/{draft}/{reads}.sorted.bam',
-        barcode=BARCODES,draft=['pilon','unicycler'], reads=['shortreads','subsampled','corrected'])
+        barcode=BARCODES,draft=['pilon','unicycler'], reads=['shortreads','subsampled','corrected']),
+  expand(config['project_dir'] + '/10_mapping/{barcode}/{draft}/done.igv',
+         barcode=BARCODES, draft=['pilon','unicycler'])
 
 rule bwa_index_draft:
  input:
@@ -141,7 +143,3 @@ rule igv_plot_unicycler:
    render(genome = input.genome, bams = sorted(input.bams), imagefile = imagefile, seqID = segment, igv_prefs=params.igv_prefs)
   shell("touch {output}")
 
-rule _all_igv:
- input:
-  expand(config['project_dir'] + '/10_mapping/{barcode}/{draft}/done.igv', 
-         barcode=BARCODES, draft=['pilon','unicycler'])
