@@ -23,7 +23,7 @@ rule canu_asm:
   LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" canu \
    -p canu -d {params.outdir} genomeSize={config[canu_genome_size]} \
    -nanopore-raw {input.reads} correctedErrorRate=0.16 useGrid=false \
-   maxMemory=12G maxThreads=8 gnuplotTested=true
+   maxMemory=20G maxThreads={threads} gnuplotTested=true
   """
 
 rule assess_canu:
@@ -47,8 +47,10 @@ rule assess_canu:
 ## Prepare sequencing summary for fast nanopolish index fast5 files
 rule collect_sequencing_summary:
  input:
-  expand(config['raw_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/sequencing_summary.txt', barcode=BARCODES),
-  config['raw_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/sequencing_summary.txt'
+  ## run9
+  #expand(config['raw_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/sequencing_summary.txt', barcode=BARCODES),
+  #config['raw_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/sequencing_summary.txt'
+  config['raw_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt'
  output:
   config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
  run:
@@ -59,10 +61,10 @@ rule collect_sequencing_summary:
 ## Index the reads after preprocessing
 rule nanopolish_index:
  input:
-#  fast5_fp1 = config['raw_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
-#  fast5_fp2 = config['raw_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}'
-  fast5_fp1 = config['raw_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/workspace/pass/{barcode}',
-  fast5_fp2 = config['raw_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/workspace/pass/{barcode}',
+  fast5_fp1 = config['raw_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
+  fast5_fp2 = config['raw_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
+#  fast5_fp1 = config['raw_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/workspace/pass/{barcode}',
+#  fast5_fp2 = config['raw_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/workspace/pass/{barcode}',
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   nanopolish_fp = config['nanopolish_fp'] + '/nanopolish',
   summary = config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
@@ -121,7 +123,7 @@ rule nanopolish_consensus:
     LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {config[nanopolish_fp]}/nanopolish variants \
     --consensus {params.polished_fp}/polished.{{1}}.fa \
     -w {{1}} -r {input.reads} -b {input.bam} -g {input.contigs} \
-    -t 4 --min-candidate-frequency 0.1 --methylation-aware=dcm,dam
+    -t {threads} --min-candidate-frequency 0.1 --methylation-aware=dcm,dam
   
   python {input.merge_fp} {params.polished_fp}/polished.*.fa > {output}
   """
@@ -157,7 +159,7 @@ rule run_circlator:
  threads: 4
  shell:
   """
-  circlator all --merge_min_id 85 --merge_breaklen 1000 --threads 4 --verbose \
+  circlator all --merge_min_id 85 --merge_breaklen 1000 --threads {threads} --verbose \
   --assembler canu --data_type nanopore-corrected --bwa_opts "-x ont2d" \
    {input.contigs} {input.correctedReads} {params.outdir}
   touch {output}
