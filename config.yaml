@@ -17,4 +17,4 @@ nanopolish_fp: $HOME/nanoflow/local/nanopolish
 quast_yaml_fp: $HOME/nanoflow/quast.yaml
 igv_prefs : {ENABLE_ANTIALIASING: true, NAME_PANEL_WIDTH: 360, SAM.MAX_VISIBLE_RANGE: 1000}
 keep_unaligned: false
-
+min_length: 5000
