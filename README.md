@@ -40,20 +40,24 @@
   ```
 
 ## Usage
+1. Basecalling:
+  ```bash
+  snakemake --configfile _all_basecalling
+  ```
 
-1. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
+2. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
   ```bash
   snakemake --configfile config.yml _all_preprocess
   ```
  
-2. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
+3. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
   ```bash
-  snakemake --configfile config.yaml _all_draft1
+  snakemake --configfile config.yaml --cores 8 _all_draft1
   ## command to submit jobs to Respublica
   snakemake -j 3 --configfile config.yml --cluster-config cluster.json -w 90 --notemp -p -c "qsub -cwd -r n -V -l h_vmem={cluster.h_vmem} -l m_mem_free={cluster.m_mem_free} -pe smp {threads}" _all_draft1
   ```
   
-3. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly)
+4. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly)
 
    * `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
@@ -61,7 +65,7 @@
   snakemake --configfile config.yaml _all_draft2
   ```
 
-4. Assembly assess and comparison
+5. Assembly assess and comparison
 
   * Metrics description
     
@@ -84,7 +88,7 @@
   snakemake --configfile config.yaml _all_comp --use-conda
   ```
   
- 5. IGV: short/long reads mapped to draft assembly
+ 6. IGV: short/long reads mapped to draft assembly
    
    * Refer to the subworkflow of [ sunbeam](http://sunbeam.readthedocs.io/en/latest/): [ sbx_igv](https://github.com/sunbeam-labs/sbx_igv)
    
