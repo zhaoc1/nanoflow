@@ -95,4 +95,5 @@
    ```bash
    snakemake --configfile config.yaml _all_map_igv
    ```
-   
+ 
+ 7. Generate bioinformatics report refer to `bioinfo_report.Rmd`. An example output is shown in `bioinfo_report.pdf`.
