@@ -100,5 +100,5 @@ rule run_quast:
   config['quast_yaml_fp']
  shell:
   """
-  quast.py -t {threads} --gene-finding --gage -o {params.outdir} -R {input.draft1} -G {input.gff} {input.draft2}
+  quast.py -t {threads} --scaffolds --gene-finding --gage -o {params.outdir} -R {input.draft1} -G {input.gff} {input.draft2}
   """

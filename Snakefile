@@ -16,6 +16,7 @@ with open(config['barcodes_fp']) as f:
 include: "preprocess.rules"
 include: "draft1.rules"
 include: "draft2.rules"
+include: "draft3.rules"
 include: "assess_asm.rules"
 include: "mapping.rules"
 
