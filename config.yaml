@@ -1,14 +1,20 @@
 admins: zhaocy.dut@gmail.com 
 project_dir: /path/to/dir/you/want/to/save/the/results
- 
-raw_fast5_fp1: /path/to/dir/fast5/files/1
-raw_fast5_fp2: /path/to/dir/fast5/files/2/happens/when/no/prearrangment/on/local/computer/memory
+
+raw_fast5_fp: /path/to/dir/raw/fast5/files
+basecalled_fast5_fp1: /path/to/project_dir/basecalled_fast5_date
+flowcell: FLO-MIN106
+kit: SQK-RBK001
+
+## duplicated information here: double check these two folders
+basecalled_fast5_fp1: /path/to/dir/fast5/files/1
+basecalled_fast5_fp2: /this/happens/when/you/dont/precheck/the/local/computer/memory
 
 ## put these in your project_dir, will be our workdir for snakemake
 barcodes_fp: barcodes.txt
 genome_fp: GCF_000932055.fa
 gene_fp: GCF_000932055.gff
-short_reads_fp: short_reads_truseq
+short_reads_fp: short_reads_nextera
 
 ## helper scripts
 basecalling_cmp_fp: $HOME/nanoflow/local/Basecalling-comparison
