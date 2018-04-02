@@ -1,0 +1,123 @@
+---
+title: "Bioinformatics Report for Nanopore Sequencing Pipeline"
+author: "Chunyu Zhao"
+date: \today
+output: 
+  pdf_document:
+    toc: true
+    number_sections: true
+geometry: "left=2cm,right=2cm,top=2cm,bottom=2cm"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(
+  tidy=FALSE,
+  cache=FALSE,
+  echo=FALSE,
+  message = FALSE,
+  warning = FALSE,
+  dpi=100,
+  fig.align = "center",
+  cache.lazy = FALSE,
+  dev=c("png", "pdf"),
+  warning=FALSE)
+```
+
+```{r}
+library(readr)
+library(reshape2)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(dplyr)
+library(tidyr)
+library(ggbeeswarm)
+library(scales)
+library(stringr)
+library(RColorBrewer)
+library(viridis)
+library(pander)
+
+source("helper.R")
+```
+
+# Assembly Stats and GAGE report
+
+```{r, fig.width=10, fig.height=7}
+runnum <- "cdiff_run9_20180321"
+barcodes <- c("barcode01","barcode02","barcode03")
+report_fp <- "reports_20180401"
+
+AsmStats <- do.call(rbind,lapply(1:length(barcodes), function(x) read_assembly_stats(report_fp, runnum, barcodes[x])))
+
+pander(AsmStats)
+
+figs <- lapply(1:length(barcodes), function(x) show_gage(report_fp, runnum, barcodes[x]))
+
+```
+
+# Assess Reads and Assembly Accuracy
+
+## Background
+
+In this section, we evaluate the accuracy of raw long reads, as well as the draft assembly using alignment to the reference genome [**CD630**](https://www.ncbi.nlm.nih.gov/genome/535?genome_assembly_id=300239), using [`Minimap2`](https://github.com/zhaoc1/nanoflow/blob/master/assess_asm.rules).
+
+Read accuracy is interesting to better understand the nanopore sequencing error, and assembly accuracy is more interesting to show whether the read errors can **average out** with high sequencing depth.
+
+## Metrics
+
+### Read Length Distribution
+
+### Read Accuracy 
+
+We only uses the **aligned** parts of the reads to calcuate the `reads identity`. 
+
+To be specific, the definition of `identity` is same with `Blast`: the number of matches in the alignment divided by alignment length (including gaps).
+
+note: If less than 50% of a read aligned, it is assigned as **unaligned** and given an identity of 0%. 
+
+### Relative read length
+
+We also show the distribution of `relative read length`: read length to reference length for each alignment. This number shows whether the basecaller is more prone to interstions or deletions.
+
+- `100%` (same length): means insertions and deletions are equally likely
+- `<100%`: deletions are more common than insetions
+- `>100%`: insertions are more common than deletions
+
+### Assembly accuracy
+
+How accurate are the consensus sequences? 
+
+```{notes, eval=F}
+https://github.com/rrwick/Basecalling-comparison/blob/master/plot_results.R
+
+Question: how about those unaligned assemblys?? what are those??
+
+https://cran.r-project.org/web/packages/gridExtra/vignettes/arrangeGrob.html
+https://cran.r-project.org/web/packages/egg/vignettes/Ecosystem.html
+
+TODO: load_tsv_data() is so much faster than read.table, and WHY??
+  
+https://www.rdocumentation.org/packages/seqinr/versions/3.4-5/topics/dotPlot
+https://www.slideshare.net/avrilcoghlan/dotplots-for-bioinformatics
+```
+
+```{r, fig.height=12, fig.width=10}
+runnum <- "cdiff_run9_20180321"
+barcodes <- c("barcode01","barcode02","barcode03")
+report_fp <- "reports_20180401"
+
+figs <- lapply(1:length(barcodes), function(x) read_assembly_assess_plot(report_fp, runnum, barcodes[x]))
+```
+
+# Assembly Comparison by Dotplot
+
+```{r, fig.height=12, fig.width=10}
+runnum <- "cdiff_run9_20180321"
+report_fp <- "reports_20180401"
+barcodes <- c("barcode01","barcode02","barcode03")
+
+figs <- lapply(1:length(barcodes), function(x) show_dot_plot(report_fp, runnum, barcodes[x]))
+```
