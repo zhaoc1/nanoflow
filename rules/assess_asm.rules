@@ -1,0 +1,148 @@
+####################
+## Assembly assess and comparison
+## MUMmer + QUAST (+ minimap2)
+####################
+
+rule _all_eval:
+ input:
+  expand(config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/{prefix}.report',
+  barcode=BARCODES, prefix = ['ref_draft1', 'ref_draft2']),
+  expand(config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/{prefix}.coords',
+  barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2','ref_draft3']),
+  expand(config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft{v}/draft{v}.gff', 
+  barcode=BARCODES, v=['1','2','3']),
+  expand(config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/quast.log', barcode=BARCODES),
+
+rule final_contigs:
+ input:
+  pilon = config['project_dir'] + '/07_pilon/{barcode}/pilon.fasta',
+  unicycler = config['project_dir'] + '/08_unicycler/{barcode}/assembly.fasta',
+  draft = config['project_dir'] + '/09_unicycler_long/{barcode}/assembly.fasta'
+ output:
+  draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
+  draft2 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta',
+  draft3 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft3.fasta'
+ params:
+   minlen = config['min_length']
+ shell:
+   """
+   vsearch --notrunclabels --sortbylength {input.pilon} --minseqlength {params.minlen} --maxseqlength -1 --output {output.draft1} 
+   vsearch --notrunclabels --sortbylength {input.unicycler} --minseqlength {params.minlen} --maxseqlength -1 --output {output.draft2} 
+   vsearch --notrunclabels --sortbylength {input.draft} --minseqlength {params.minlen} --maxseqlength -1 --output {output.draft3}
+   """
+
+rule eval_assembly:
+ input:
+  refgenome = config['project_dir'] + '/' + config['genome_fp'],
+  draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
+  draft2 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta',
+  draft3 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft3.fasta'
+ output:
+  repeats = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref.repeats',
+  draft1 = config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/ref_draft1.report',
+  draft2 = config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}/ref_draft2.report',
+  ##numcer
+  ref_draft1 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref_draft1.coords',
+  ref_draft2 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref_draft2.coords',
+  draft1_draft2 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/draft1_draft2.coords',
+  ref_draft3 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}/ref_draft3.coords'
+ params:
+  out_dir1 = config['project_dir'] + '/reports/09_eval/dnadiff/{barcode}',
+  out_dir2 = config['project_dir'] + '/reports/09_eval/nucmer/{barcode}',
+  prefix1 = 'ref_draft1',
+  prefix2 = 'ref_draft2', 
+  prefix3 = 'ref_draft3',
+  prefix = 'draft1_draft2'
+ shell:
+  """
+  ## avgident
+  cd {params.out_dir1}
+  dnadiff --prefix ref_draft1 {input.refgenome} {input.draft1}
+  dnadiff --prefix ref_draft2 {input.refgenome} {input.draft2}
+  
+  cd {params.out_dir2}
+  ## find exact tandem repeats of length 100 or greater in a single sequence seq.fasta
+  repeat-match -n 100 {input.refgenome} > {output.repeats}
+
+  ## mapping a draft sequence to a finished sequence
+  nucmer -maxmatch -c 100 -p {params.prefix1} {input.refgenome} {input.draft1}
+  show-coords -r -c -l {params.prefix1}.delta > {output.ref_draft1}
+  
+  nucmer -maxmatch -c 100 -p {params.prefix2} {input.refgenome} {input.draft2}
+  show-coords -r -c -l {params.prefix2}.delta > {output.ref_draft2}
+  
+  nucmer -maxmatch -c 100 -p {params.prefix3} {input.refgenome} {input.draft3}
+  show-coords -r -c -l {params.prefix3}.delta > {output.ref_draft3}
+  
+  ## aligning two draft sequences
+  nucmer -maxmatch -c 100 -p {params.prefix} {input.draft1} {input.draft2}
+  show-coords -r -c -l {params.prefix}.delta > {output.draft1_draft2}
+  """
+
+rule run_prokka:
+ input:
+  draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
+  draft2 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta',
+  draft3 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft3.fasta'
+ output:
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft1/draft1.gff',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft2/draft2.gff',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft3/draft3.gff',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft1/draft1.ffn',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft2/draft2.ffn',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft3/draft3.ffn'
+ params:
+  outdir1 = config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft1',
+  outdir2 = config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft2',
+  outdir3 = config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft3'
+ threads: 4
+ conda:
+  config['quast_yaml_fp']
+ shell:
+  """
+  prokka --kingdom Bacteria --outdir {params.outdir1} --prefix draft1 \
+         --locustag draft1 --force {input.draft1}
+  
+  prokka --kingdom Bacteria --outdir {params.outdir2} --prefix draft2 \
+         --locustag draft2 --force {input.draft2}
+
+  prokka --kingdom Bacteria --outdir {params.outdir3} --prefix draft3 \
+         --locustag draft3 --force {input.draft3}
+  """ 
+
+rule make_blastdb:
+ input:
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft1/draft1.ffn',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft2/draft2.ffn',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft3/draft3.ffn'
+ output:
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft1/draft1.ffn.nhr',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft2/draft2.ffn.nhr',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft3/draft3.ffn.nhr'
+ shell:
+  """
+  makeblastdb -in {input[0]} -dbtype nucl
+  makeblastdb -in {input[1]} -dbtype nucl
+  makeblastdb -in {input[2]} -dbtype nucl
+  """
+
+rule run_quast:
+ input:
+  ref = config['project_dir'] + '/' + config['genome_fp'],
+  gff = config['project_dir'] + '/' + config['gene_fp'],
+  draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
+  draft2 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta',
+  draft3 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft3.fasta'
+ output:
+  config['project_dir'] + '/reports/09_eval/quast_results/{barcode}/quast.log',
+ params:
+  outdir = config['project_dir'] + '/reports/09_eval/quast_results/{barcode}'
+ threads: 4
+ conda: 
+  config['quast_yaml_fp']
+ shell:
+  """
+  quast.py -t {threads} --gene-finding --gage -o {params.outdir} \
+           --min-contig 100000 -R {input.ref} -G {input.gff} \
+           {input.draft1} {input.draft2} {input.draft3}
+  """
