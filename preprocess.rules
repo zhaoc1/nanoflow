@@ -35,7 +35,7 @@ rule collect_raw_fastq:
  input:
   fast5_fp1 = config['basecalled_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
   fast5_fp2 = config['basecalled_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}'
-  ## run9
+  #run9
   #fast5_fp1 = config['basecalled_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/workspace/pass/{barcode}',
   #fast5_fp2 = config['basecalled_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/workspace/pass/{barcode}' 
  output:
@@ -106,7 +106,9 @@ rule subsample_reads_with_reference:
   config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.with.ref.fastq.gz'
  shell:
   """
-  filtlong -1 {input.R1} -2 {input.R2} --min_length 1000 --keep_percent 90 --target_bases 500000000 {input.reads} --trim --split 250 | gzip > {output}
+  filtlong -1 {input.R1} -2 {input.R2} --min_length 1000 --keep_percent 90 \
+           --target_bases 500000000 {input.reads} --trim \
+           --split 250 | gzip > {output}
   """
 
 rule asm_stats_subsample:
@@ -118,3 +120,4 @@ rule asm_stats_subsample:
   """
   assembly-stats <(gunzip -c {input}) > {output}
   """
+

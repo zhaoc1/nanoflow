@@ -18,7 +18,7 @@ rule run_unicycler_existing_long:
   longasm = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta'
  output:
   contigs = config['project_dir'] + '/09_unicycler_long/{barcode}/assembly.fasta'
- threads: 8
+ threads: 16
  params:
   outdir = config['project_dir'] + '/09_unicycler_long/{barcode}'
  shell:

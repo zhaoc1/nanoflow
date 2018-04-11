@@ -17,7 +17,7 @@ rule canu_asm:
   config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
  params:
   outdir = config['project_dir'] + '/04_canu/{barcode}'
- threads: 8
+ threads: 16
  shell:
   """
   LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" canu \
@@ -36,7 +36,7 @@ rule assess_canu:
   asm_pieces = config['project_dir'] + '/04_canu/{barcode}/asm_pieces.fasta',
   asm_aln = config['project_dir'] + '/04_canu/{barcode}/asm.aln.paf',
   asm_table = config['project_dir'] + '/reports/04_canu/{barcode}/asm.aln.tsv'
- threads: 2
+ threads: 4
  shell:
   """
   python {input.python_chop_fp} {input.contigs} 10000 > {output.asm_pieces}
@@ -50,7 +50,8 @@ rule collect_sequencing_summary:
   ## run9
   #expand(config['basecalled_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/sequencing_summary.txt', barcode=BARCODES),
   #config['basecalled_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/sequencing_summary.txt'
-  config['basecalled_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt'
+  config['basecalled_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt',
+  #config['basecalled_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt'
  output:
   config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
  run:
@@ -85,13 +86,14 @@ rule minimap2_align_nanopolish:
   contigs_canu = config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   reads_index = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz.index.readdb',
+  summary = config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
  output:
   contigs = config['project_dir'] + '/05_nanopolish/{barcode}/canu.contigs.fasta',
   sorted_bam = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam',
   sorted_bai = config['project_dir'] + '/05_nanopolish/{barcode}/reads.sorted.bam.bai'
  params:
   temp = config['project_dir'] + '/05_nanopolish/{barcode}/reads.tmp'
- threads: 8
+ threads: 16
  shell:
   """
   cp {input.contigs_canu} {output.contigs}
@@ -114,12 +116,12 @@ rule nanopolish_consensus:
  params:
   results_fp = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.results',
   polished_fp = config['project_dir'] + '/05_nanopolish/{barcode}/polished.results'
- threads: 8
+ threads: 16
  shell:
   """
   mkdir -p {params.polished_fp}
   python {input.makerange_fp} {input.contigs} | \
-   parallel --results {params.results_fp} -P 8 \
+   parallel --results {params.results_fp} -P 16 \
     LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {config[nanopolish_fp]}/nanopolish variants \
     --consensus {params.polished_fp}/polished.{{1}}.fa \
     -w {{1}} -r {input.reads} -b {input.bam} -g {input.contigs} \
@@ -138,7 +140,7 @@ rule assess_nanopolish:
   asm_pieces = config['project_dir'] + '/05_nanopolish/{barcode}/asm_pieces.fasta',
   asm_aln = config['project_dir'] + '/05_nanopolish/{barcode}/asm.aln.paf',
   asm_table = config['project_dir'] + '/reports/05_nanopolish/{barcode}/asm.aln.tsv'
- threads: 2
+ threads: 4
  shell:
   """
   python {input.python_chop_fp} {input.contigs_nanopolish} 10000 > {output.asm_pieces}
