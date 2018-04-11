@@ -9,18 +9,17 @@ from sbx_igv import *
 
 rule _all:
  input:
-  expand(config['project_dir'] + '/reports/10_eval/nucmer/{barcode}/{prefix}.coords',
+  expand(config['project_dir'] + '/reports/final_assembly/nucmer/{barcode}/{prefix}.coords',
   barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2']),
   expand(config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft{v}/draft{v}.gff', 
   barcode=BARCODES, v=['1','2']),
-  expand(config['project_dir'] + '/reports/10_eval/quast_results/{barcode}/quast.log', barcode=BARCODES),
+  expand(config['project_dir'] + '/reports/final_assembly/{barcode}/quast_results/quast.log', barcode=BARCODES),
+  expand(config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/{reads}.sorted.bam',
+        barcode=BARCODES,reads=['shortreads','subsampled','corrected'])
 
 rule _all_igv_map:
  input:
-  expand(config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/{reads}.sorted.bam',
-        barcode=BARCODES,reads=['shortreads','subsampled','corrected']),
-  expand(config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/done.igv',
-         barcode=BARCODES)
+  expand(config['project_dir']+'/reports/10_mapping/{barcode}/unicycler/done.igv',barcode=BARCODES)
 
 rule _all_draft3:
  input:
@@ -82,15 +81,16 @@ rule eval_assembly:
   draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
   draft2 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta'
  output:
-  ref_draft1 = config['project_dir'] + '/reports/10_eval/nucmer/{barcode}/ref_draft1.coords',
-  ref_draft2 = config['project_dir'] + '/reports/10_eval/nucmer/{barcode}/ref_draft2.coords',
-  draft1_draft2 = config['project_dir'] + '/reports/10_eval/nucmer/{barcode}/draft1_draft2.coords'
+  ref_draft1 = config['project_dir'] + '/reports/final_assembly/nucmer/{barcode}/ref_draft1.coords',
+  ref_draft2 = config['project_dir'] + '/reports/final_assembly/nucmer/{barcode}/ref_draft2.coords',
+  draft1_draft2 = config['project_dir'] + '/reports/final_assembly/nucmer/{barcode}/draft1_draft2.coords'
  params:
-  out_dir2 = config['project_dir'] + '/reports/10_eval/nucmer/{barcode}',
+  out_dir2 = config['project_dir'] + '/reports/final_assembly/nucmer/{barcode}',
   prefix1 = 'ref_draft1',
   prefix2 = 'ref_draft2', 
   prefix = 'draft1_draft2'
  shell:
+  """
   cd {params.out_dir2}
 
   nucmer -maxmatch -c 100 -p {params.prefix1} {input.refgenome} {input.draft1}
@@ -145,9 +145,9 @@ rule run_quast:
   draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
   draft2 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta'
  output:
-  config['project_dir'] + '/reports/10_eval/quast_results/{barcode}/quast.log',
+  config['project_dir'] + '/reports/final_assembly/{barcode}/quast_results/quast.log',
  params:
-  outdir = config['project_dir'] + '/reports/10_eval/quast_results/{barcode}'
+  outdir = config['project_dir'] + '/reports/final_assembly/{barcode}/quast_results'
  threads: 4
  conda: 
   config['quast_yaml_fp']
@@ -155,15 +155,15 @@ rule run_quast:
   """
   quast.py -t {threads} --gene-finding --gage -o {params.outdir} \
            --min-contig 100000 -R {input.ref} -G {input.gff} \
-           {input.draft1} {input.draft2} {input.draft3}
+           {input.draft1} {input.draft2}
   """
 
 rule bwa_index_draft:
  input:
   draft = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta'
  output:
-  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/unicycler/draft.fasta',
-  index = config['project_dir'] + '/reports/final_assembly/{barcode}/unicycler/draft.fasta.amb'
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
  shell:
   """
   cp {input.draft} {output.draft}
@@ -174,13 +174,13 @@ rule bwa_short_reads:
  input:
   R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
   R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
-  draft = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta',
-  index = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta.amb'
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
  output:
-  bam = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/shortreads.sorted.bam'
+  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/shortreads.sorted.bam'
  threads: 8
  params:
-  temp = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/shortreads.tmp'
+  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/shortreads.tmp'
  shell:
   """
   bwa mem -t {threads} {input.draft} {input.R1} {input.R2} | \
@@ -191,13 +191,13 @@ rule bwa_short_reads:
 rule minimap2_subsampled_reads:
  input:
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
-  draft = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta',
-  index = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta.amb'
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
  output:
-  bam = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/subsampled.sorted.bam'
+  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/subsampled.sorted.bam'
  threads: 8
  params:
-  temp = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/subsampled.reads.tmp'
+  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/subsampled.reads.tmp'
  shell:
   """
   minimap2 -ax map-ont -t {threads} {input.draft} {input.reads} | \
@@ -208,13 +208,13 @@ rule minimap2_subsampled_reads:
 rule minimap2_corrected_reads:
  input:
   reads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz',
-  draft = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta',
-  index = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta.amb'
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
  output:
-  bam = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/corrected.sorted.bam'
+  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/corrected.sorted.bam'
  threads: 4
  params:
-  temp = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/corrected.reads.tmp'
+  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/corrected.reads.tmp'
  shell:
   """
   minimap2 -ax map-ont -t {threads} {input.draft} {input.reads} | \
@@ -224,14 +224,14 @@ rule minimap2_corrected_reads:
 
 rule igv_plot:
  input:
-  genome = config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/draft.fasta',
-  bams = expand(config['project_dir'] + '/reports/10_mapping/{{barcode}}/unicycler/{reads}.sorted.bam', reads=['shortreads','subsampled','corrected'])
-  #bais = expand(config['project_dir'] + '/reports/10_mapping/{{barcode}}/unicycler/{reads}.sorted.bam.bai', reads=['shortreads','subsampled','corrected'])
+  genome = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  bams = expand(config['project_dir'] + '/reports/final_assembly/{{barcode}}/asm_mapping/{reads}.sorted.bam', reads=['shortreads','subsampled','corrected'])
+  #bais = expand(config['project_dir'] + '/reports/final_assembly/{{barcode}}/unicycler/{reads}.sorted.bam.bai', reads=['shortreads','subsampled','corrected'])
  output:
-  config['project_dir'] + '/reports/10_mapping/{barcode}/unicycler/done.igv'
+  config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/done.igv'
  params:
   igv_prefs = config['igv_prefs'],
-  outdir = config['project_dir'] + '/reports/10_mapping/{barcode}/best'
+  outdir = config['project_dir'] + '/reports/final_assembly/{barcode}/best'
  run:
   segments = read_seq_ids(input.genome)
   for segment in segments:
