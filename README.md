@@ -84,7 +84,11 @@
     - Multiple assemblies comparison using [ QUAST](http://quast.bioinf.spbau.ru/manual.html#faq_q16)
     - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
     - Assembly to assembly comparisons using [ Minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
-   
+    
+   * Wish you knew sooner 😔
+      - Minimap2 and the future of BWA, by Heng Li's [blog](https://lh3.github.io/2018/04/02/minimap2-and-the-future-of-bwa).
+      - Long reads assembly: indels cause interrupted genes, by Mick Watson's [blog](http://www.opiniomics.org/a-simple-test-for-uncorrected-insertions-and-deletions-indels-in-bacterial-genomes/).
+  
   ```bash  
   snakemake --configfile config.yaml _all_comp --use-conda
   ```
