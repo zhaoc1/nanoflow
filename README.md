@@ -87,7 +87,7 @@
     
    * Wish you knew sooner 😔
       - Minimap2 and the future of BWA, by Heng Li's [blog](https://lh3.github.io/2018/04/02/minimap2-and-the-future-of-bwa).
-      - Long reads assembly: indels cause interrupted genes, by Mick Watson's [blog](http://www.opiniomics.org/a-simple-test-for-uncorrected-insertions-and-deletions-indels-in-bacterial-genomes/).
+      - Long reads assembly: indels cause interrupted genes, by Mick Watson's [blog](http://www.opiniomics.org/a-simple-test-for-uncorrected-insertions-and-deletions-indels-in-bacterial-genomes/). I also have an example for this issue [ demo_interrupted_genes](https://github.com/zhaoc1/nanoflow/blob/master/demo_interruptted_genes.pdf)
   
   ```bash  
   snakemake --configfile config.yaml _all_comp --use-conda
