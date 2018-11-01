@@ -4,6 +4,7 @@
   
   ```bash
   git clone https://github.com/ressy/conda-gcc5.git
+  cd conda-gcc5
   bash setup.py nanoflow
   ```
 2. Clone this repository into a local directory and activate `nanoflow` environment
@@ -11,7 +12,7 @@
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
   source activate nanoflow
-  conda install --file conda-requirements.txt
+  conda env update --name=nanoflow --file env.yml
   ```
  
 3. Clone Ryan Wick's Basecalling-comparison repository
