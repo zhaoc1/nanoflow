@@ -52,7 +52,7 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
 
 2. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
   ```bash
-  snakemake --configfile config.yml _all_preprocess
+  snakemake --configfile config.yml _all_qc
   ```
  
 3. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
@@ -90,6 +90,7 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
     - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
     - Assembly to assembly comparisons using [ Minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
     - PacBio long read assembly [workshop](http://sepsis-omics.github.io/tutorials/modules/cmdline_assembly_v2/) from ABRPI-Training.
+    - de.NBI [Nanopore Training Course](https://denbi-nanopore-training-course.readthedocs.io/en/latest/index.html).
     
    * Wish you knew sooner 😔
       - Minimap2 and the future of BWA, by Heng Li's [blog](https://lh3.github.io/2018/04/02/minimap2-and-the-future-of-bwa).
