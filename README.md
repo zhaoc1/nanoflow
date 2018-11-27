@@ -1,4 +1,4 @@
-# Nanoflow: a bioinformatics workFLOW for analying NANOpore sequencing data
+# Nanoflow: a NANOpore sequencing data bioinformatics workFLOW
 
 Nanoflow is a pipeline written in snakemake to automate many of the steps of quality control, de novo assemblies and genome annotation in whole genome sequencing analysis, using Oxford Nanopore sequencing data.
 
