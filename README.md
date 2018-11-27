@@ -89,7 +89,7 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
     - Multiple assemblies comparison using [ QUAST](http://quast.bioinf.spbau.ru/manual.html#faq_q16).
     - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
     - Assembly to assembly comparisons using [ Minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
-    - PacBio long read assembly [workshop](http://sepsis-omics.github.io/tutorials/modules/cmdline_assembly_v2/) from ABRPI-Training.
+    - [Microbial genomics tutorials](http://sepsis-omics.github.io/tutorials/modules/cmdline_assembly_v2/) using PacBio long reads from ABRPI-Training.
     - de.NBI [Nanopore Training Course](https://denbi-nanopore-training-course.readthedocs.io/en/latest/index.html).
     
    * Wish you knew sooner 😔
