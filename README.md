@@ -1,4 +1,4 @@
-# Nanoflow: a bioinformatics workFLOW for analying NANOpore sequencing data 🐨
+# Nanoflow: a bioinformatics workFLOW for analying NANOpore sequencing data
 
 Nanoflow is a pipeline written in snakemake to automate many of the steps of quality control, de novo assemblies and genome annotation in whole genome sequencing analysis, using Oxford Nanopore sequencing data.
 
@@ -82,13 +82,14 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
     
   * A good reference guide for interpretting the dot plot is available [ here](http://mummer.sourceforge.net/manual/AlignmentTypes.pdf).
     
-  * Some good tutorials:
+  * Some good tutorials 😳
     - Align two draft sequences using [ MUMmer](http://mummer.sourceforge.net/manual/#aligningdraft).
     - Evaluate the assembly using [ MUMmer](http://nanopolish.readthedocs.io/en/latest/quickstart_consensus.html).
     - Assembly evaluation with [ QUAST](http://denbi-nanopore-training-course.readthedocs.io/en/latest/assembly_qc/quast.html)
     - Multiple assemblies comparison using [ QUAST](http://quast.bioinf.spbau.ru/manual.html#faq_q16)
     - Highly similar sequences with rearrangments using [ run-mummer3](http://mummer.sourceforge.net/manual/#mummer3) [TODO].
     - Assembly to assembly comparisons using [ Minimap2](https://github.com/lh3/minimap2/issues/109) [TODO].
+    - PacBio long read assembly [workshop](http://sepsis-omics.github.io/tutorials/modules/cmdline_assembly_v2/) from ABRPI-Training.
     
    * Wish you knew sooner 😔
       - Minimap2 and the future of BWA, by Heng Li's [blog](https://lh3.github.io/2018/04/02/minimap2-and-the-future-of-bwa).
