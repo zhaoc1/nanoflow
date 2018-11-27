@@ -7,7 +7,7 @@ rule _all_basecalling:
  input:
    config['basecalled_fast5_fp1'] + '/Done.Albacore'
 
-rule _all_preprocess:
+rule _all_qc:
  input:
    expand(config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz', barcode=BARCODES),
    expand(config['project_dir'] + '/reports/{step}/{barcode}/reads.asm.stats', step=['01_basecalled_reads','03_subsampled_reads'], barcode=BARCODES),
