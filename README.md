@@ -1,3 +1,7 @@
+# Nanoflow: a bioinformatics workFLOW for analying NANOpore sequencing data 🐨
+
+Nanoflow is a pipeline written in snakemake to automate many of the steps of quality control, de novo assemblies and genome annotation in whole genome sequencing analysis, using Oxford Nanopore sequencing data.
+
 ## Installation
 
 1. Clone Jesse's conda-gcc5 repository and create an new environment `nanoflow` with GCC5 installed
