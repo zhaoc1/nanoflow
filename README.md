@@ -28,6 +28,12 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
 
 4. Download other packages into local directory
   ```bash
+  ## Canu 1.8
+  wget https://github.com/marbl/canu/archive/v1.8.tar.gz
+  tar -xvf v1.8.tar.gz
+  cd canu-1.8/src
+  make -j 4
+
   ## Nanopolish v0.9.0
   git clone --recursive https://github.com/jts/nanopolish.git
   cd nanopolish
