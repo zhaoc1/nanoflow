@@ -8,7 +8,7 @@ rule _all_draft1:
   expand(config['project_dir'] + '/reports/{step}/{barcode}/asm.aln.tsv', 
     step=['04_canu','05_nanopolish','07_pilon'], barcode=BARCODES)
 
-## Long Reads Assembler: Canu
+#### Long Reads Assembler: Canu
 rule canu_asm:
  input:
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz'
@@ -44,7 +44,7 @@ rule assess_canu:
   python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
   """
 
-## Prepare sequencing summary for fast nanopolish index fast5 files
+#### Prepare sequencing summary for fast nanopolish index fast5 files
 rule collect_sequencing_summary:
  input:
   ## run9
@@ -148,7 +148,7 @@ rule assess_nanopolish:
   python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
   """
 
-## Circlator: trim overhangs and circularize contigs
+#### Circlator: trim overhangs and circularize contigs
 rule run_circlator:
  input:
   contigs = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta',
@@ -167,7 +167,7 @@ rule run_circlator:
   touch {output}
   """
 
-## Pilon: improve draft assembly using short reads
+#### Pilon: improve draft assembly using short reads
 rule minimap2_align_pilon:
  input:
   R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',

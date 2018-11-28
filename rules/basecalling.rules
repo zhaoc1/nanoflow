@@ -1,0 +1,43 @@
+####################
+## Basecalling
+####################
+
+
+rule _all_basecalling:
+ input:
+   config['basecalled_fast5_fp1'] + '/Done.Albacore'
+
+
+## Albacore basecall
+rule albacore_basecall:
+ input:
+  raw_fast5_fp = config['raw_fast5_fp']
+ output:
+  config['basecalled_fast5_fp1'] + '/Done.Albacore'
+ threads: 8
+ params:
+  basecalled_fast5_fp = config['basecalled_fast5_fp1']
+ shell:
+  """
+  read_fast5_basecaller.py --flowcell {config[flowcell]} --kit {config[kit]} --barcoding \
+     --output_format fast5,fastq --worker_threads {threads} --recursive \
+     --input {input.raw_fast5_fp} --save_path {params.basecalled_fast5_fp}
+  touch {output}
+  """
+
+
+## Gather_up_nanopore_fastqs
+rule collect_raw_fastq:
+ input:
+  fast5_fp1 = config['basecalled_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
+  fast5_fp2 = config['basecalled_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}'
+  #run9
+  #fast5_fp1 = config['basecalled_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/workspace/pass/{barcode}',
+  #fast5_fp2 = config['basecalled_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/workspace/pass/{barcode}' 
+ output:
+  config['project_dir'] + '/01_basecalled_reads/{barcode}/reads.fastq'
+ run:
+  if os.path.samefile(input.fast5_fp1, input.fast5_fp2):
+   shell("cat {input.fast5_fp1}/*.fastq > {output}")
+  else:
+   shell("cat {input.fast5_fp1}/*.fastq {input.fast5_fp2}/*.fastq > {output}")

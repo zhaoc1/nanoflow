@@ -1,0 +1,28 @@
+admins: zhaocy.dut@gmail.com 
+project_dir: /home/chunyu/nanoflow_tutorial
+
+##### basecalling
+raw_fast5_fp: /path/to/dir/raw/fast5/files
+flowcell: FLO-MIN106
+kit: SQK-RBK001
+
+basecalled_fast5_fp1: /path/to/dir/fast5/files/1
+basecalled_fast5_fp2: /path/to/dir/fast5/files/2
+
+##### qc
+##### make sure the following files are in the project_dir
+barcodes_fp: barcodes.txt
+genome_fp: GCF_000417085.fna
+gene_fp: GCF_000417085.gff
+short_reads_fp: short_reads
+
+#### helper scripts
+basecalling_cmp_fp: /home/chunyu/nanoflow/local/Basecalling-comparison
+canu_genome_size: 5.6m
+nanopolish_fp: /home/chunyu/nanoflow/local/nanopolish
+
+
+quast_yaml_fp: /home/chunyu/nanoflow/quast.yaml
+igv_prefs : {ENABLE_ANTIALIASING: true, NAME_PANEL_WIDTH: 360, SAM.MAX_VISIBLE_RANGE: 1000}
+keep_unaligned: false
+min_length: 5000
