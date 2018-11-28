@@ -9,7 +9,7 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   ```bash
   git clone https://github.com/ressy/conda-gcc5.git
   cd conda-gcc5
-  bash setup.py nanoflow
+  bash setup.sh nanoflow
   ```
 2. Clone this repository into a local directory and activate `nanoflow` environment
   ```bash
