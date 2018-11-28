@@ -11,19 +11,19 @@ rule _all_draft1_nofast5:
 #### Long Reads Assembler: Canu
 rule canu_asm:
  input:
-  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz'
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz', 
+  canu_fp = config['canu_fp'] + '/canu'
  output:
   config['project_dir'] + '/04_canu/{barcode}/canu.contigs.fasta',
   config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz'
  params:
   outdir = config['project_dir'] + '/04_canu/{barcode}'
- threads: 16
+ threads: 8
  shell:
   """
-  LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" canu \
+  LD_LIBRARY_PATH="$CONDA_PREFIX/lib64" {input.canu_fp} \
    -p canu -d {params.outdir} genomeSize={config[canu_genome_size]} \
-   -nanopore-raw {input.reads} correctedErrorRate=0.16 useGrid=false \
-   maxMemory=20G maxThreads={threads} gnuplotTested=true
+   -nanopore-raw {input.reads} 
   """
 
 rule assess_canu:

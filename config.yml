@@ -19,6 +19,7 @@ short_reads_fp: short_reads
 #### helper scripts
 basecalling_cmp_fp: /home/chunyu/nanoflow/local/Basecalling-comparison
 canu_genome_size: 5.6m
+canu_fp: /home/chunyu/nanoflow/local/canu-1.8/Linux-amd64/bin
 nanopolish_fp: /home/chunyu/nanoflow/local/nanopolish
 
 
