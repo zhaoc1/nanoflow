@@ -16,6 +16,7 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
   source activate nanoflow
+  conda install -n nanoflow snakemake=4.8.1
   conda env update --name=nanoflow --file env.yml
   ```
  
