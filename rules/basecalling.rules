@@ -3,7 +3,7 @@
 ####################
 
 
-rule _all_basecalling:
+rule all_basecalling:
  input:
    config['basecalled_fast5_fp1'] + '/Done.Albacore'
 
