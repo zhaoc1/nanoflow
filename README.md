@@ -12,10 +12,9 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   Copy the following to the file.
    ```bash
    channels:
-    - bioconda
-    - conda-forge
-    - defaults
-    - cyclus
+  - bioconda
+  - conda-forge
+  - defaults
   ```
 
 2. Install GCC5, by cloning [Jesse](https://github.com/ressy)'s conda-gcc5 repository and create an new conda environment `nanoflow`.
