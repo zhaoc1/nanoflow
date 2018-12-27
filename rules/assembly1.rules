@@ -135,7 +135,7 @@ rule assess_nanopolish:
   asm_pieces = config['project_dir'] + '/05_nanopolish/{barcode}/asm_pieces.fasta',
   asm_aln = config['project_dir'] + '/05_nanopolish/{barcode}/asm.aln.paf',
   asm_table = config['project_dir'] + '/reports/05_nanopolish/{barcode}/asm.aln.tsv'
- threads: 4
+ threads: 8
  shell:
   """
   python {input.python_chop_fp} {input.contigs_nanopolish} 10000 > {output.asm_pieces}
@@ -213,7 +213,7 @@ rule assess_pilon:
   asm_pieces = config['project_dir'] + '/07_pilon/{barcode}/asm_pieces.fasta',
   asm_aln = config['project_dir'] + '/07_pilon/{barcode}/asm.aln.paf',
   asm_table = config['project_dir'] + '/reports/07_pilon/{barcode}/asm.aln.tsv'
- threads: 2
+ threads: 8
  shell:
   """
   python {input.python_chop_fp} {input.draft_v1} 10000 > {output.asm_pieces}
