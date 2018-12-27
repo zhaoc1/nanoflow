@@ -14,3 +14,6 @@ basecalled_fast5_fp=/scr1/users/zhaoc1/projects/basecalled_run14_20180329
 ## do the work
 read_fast5_basecaller.py --flowcell FLO-MIN106 --kit SQK-RBK001 --barcoding --output_format fast5,fastq \
 	--worker_threads 8 --recursive --input $raw_fast5_fp --save_path $basecalled_fast5_fp
+
+## to be consistent with snakemake 
+touch /scr1/users/zhaoc1/projects/basecalled_run14_20180329/Done.Albacore
