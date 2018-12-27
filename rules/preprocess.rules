@@ -3,17 +3,12 @@
 ####################
 
 
-rule _all_qc:
+rule all_qc:
  input:
   expand(config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz', barcode=BARCODES),
-  expand(config['project_dir'] + '/reports/{step}/{barcode}/reads.asm.stats', step=['01_basecalled_reads','03_subsampled_reads'], barcode=BARCODES)
-
-
-rule _all_qc_reports:
- input:
-   expand(config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz', barcode=BARCODES),
-   expand(config['project_dir'] + '/reports/{step}/{barcode}/reads.asm.stats', step=['01_basecalled_reads','03_subsampled_reads'], barcode=BARCODES),
-   expand(config['project_dir'] + '/reports/01_basecalled_reads/{barcode}/reads.aln.tsv', barcode=BARCODES)
+  expand(config['project_dir'] + '/reports/{step}/{barcode}/reads.asm.stats', 
+         step=['01_basecalled_reads','03_subsampled_reads'], barcode=BARCODES),
+  expand(config['project_dir'] + '/reports/01_basecalled_reads/{barcode}/reads.aln.tsv', barcode=BARCODES)
 
 
 ## Assembly stats raw long reads
@@ -27,7 +22,7 @@ rule asm_stats_raw:
   assembly-stats {input} > {output}
   """
 
-## Assess reads using reference genome
+## Assess reads using provided reference genome
 rule assess_reads:
  input:
   genome = config['project_dir'] + '/' + config['genome_fp'],
@@ -36,7 +31,7 @@ rule assess_reads:
  output:
   aln = config['project_dir'] + '/01_basecalled_reads/{barcode}/reads.paf',
   table = config['project_dir'] + '/reports/01_basecalled_reads/{barcode}/reads.aln.tsv'
- threads: 1
+ threads: 8
  shell:
   """
   minimap2 -k12 -t {threads} -c {input.genome} {input.reads} > {output.aln}
@@ -66,7 +61,7 @@ rule subsample_reads:
   filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 {input} | gzip > {output}
   """
 
-## Subsample long reads with reference
+## Subsample long reads with corresponding short reads
 rule subsample_reads_with_reference:
  input:
   reads = config['project_dir'] + '/02_trimmed_reads/{barcode}/reads.fastq',
