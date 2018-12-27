@@ -89,15 +89,30 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   snakemake --configfile config.yaml --cores 8 all_draft1
   ```
   
-4. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly)
+4. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly) (default mode)
 
    * `depth=X` in the FASTA header: to preserve the relative depths. This is mainly used for plasmid sequences, which should be more represented in the reads than the chromosomal sequence.
  
   ```bash
-  snakemake --configfile config.yaml _all_draft2
+  snakemake --configfile config.yaml all_draft2
   ```
 
-5. Assembly assess and comparison
+5. Hybrid assembly option 3: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly) (existing long reads assembly option)
+
+ 
+  ```bash
+  snakemake --configfile config.yaml all_draft3
+  ```  
+
+6. For the final draft genome, a common practice is to choose two of the assemblies results you are happy with, assess them with the provided reference genome, compare one to the other, and map reads back to the draft genomes to calcualate the coverage. All of these tasks are implemented in the `assembly.rules`.
+
+    * We sequenced C diff isoaltes at PCMP, and therefore in the `run_prokka` rules, I used the `genus` level prokka database. If you have a different organisms to study, please build the prokka genus database by yourself and change the corresponding lines in the `run_prokka` rule. 
+
+  ```bash
+  snakemake --configfile config.yaml all_final
+  ```
+
+6. Assembly assess and comparison
 
   * Metrics description
     
@@ -123,17 +138,18 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
       - Minimap2 and the future of BWA, by Heng Li's [blog](https://lh3.github.io/2018/04/02/minimap2-and-the-future-of-bwa).
       - Long reads assembly: indels cause interrupted genes, by Mick Watson's [blog](http://www.opiniomics.org/a-simple-test-for-uncorrected-insertions-and-deletions-indels-in-bacterial-genomes/). I also have an example for this issue [ demo_interrupted_genes](https://github.com/zhaoc1/nanoflow/blob/master/demo_interruptted_genes.pdf)
       - This [paper](https://academic.oup.com/bioinformatics/advance-article-abstract/doi/10.1093/bioinformatics/bty833/5106166) talks about the commonly incorrect use of the *max_target_seqs* of BLAST.
-  
-  ```bash  
-  snakemake --configfile config.yaml _all_comp --use-conda
-  ```
-  
- 6. IGV: short/long reads mapped to draft assembly
+      
+   * Two optional features provided by Nanoflow:
+      1. assess draft genomes using QUAST 
+      ```bash  
+      snakemake --configfile config.yaml _all_quast --use-conda
+      ```
+      
+      2. IGV: short/long reads mapped to draft assembly
+        * Refer to the subworkflow of [ sunbeam](http://sunbeam.readthedocs.io/en/latest/): [ sbx_igv](https://github.com/sunbeam-labs/sbx_igv)
    
-   * Refer to the subworkflow of [ sunbeam](http://sunbeam.readthedocs.io/en/latest/): [ sbx_igv](https://github.com/sunbeam-labs/sbx_igv)
-   
-   ```bash
-   snakemake --configfile config.yaml _all_map_igv
-   ```
+     ```bash
+     snakemake --configfile config.yaml _all_igv
+     ```
  
  7. Generate bioinformatics report refer to `bioinfo_report.Rmd`. An example output is shown in `bioinfo_report.pdf`.
