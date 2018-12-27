@@ -152,4 +152,4 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
      snakemake --configfile config.yaml _all_igv
      ```
  
- 7. Generate bioinformatics report refer to `bioinfo_report.Rmd`. An example output is shown in `bioinfo_report.pdf`.
+ 7. Generate bioinformatics report refer to `bioinfo_report.Rmd`. An example output is shown in [**bioinfo_report.pdf**](https://github.com/zhaoc1/nanoflow/blob/master/bioinfo_report.pdf).
