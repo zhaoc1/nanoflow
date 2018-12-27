@@ -8,13 +8,14 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   ```bash
   nano ~/.condarc
   ```
+  
   Copy the following to the file.
    ```bash
    channels:
     - bioconda
     - conda-forge
-    - r
     - defaults
+    - cyclus
   ```
 
 2. Install GCC5, by cloning [Jesse](https://github.com/ressy)'s conda-gcc5 repository and create an new conda environment `nanoflow`.
@@ -26,23 +27,25 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   bash setup.sh nanoflow
   ```
   
-3. Clone this repository into a local directory and activate `nanoflow` environment
+3. Clone this repository into a local directory and install the packages into `nanoflow` environment.
+
   ```bash
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
   source activate nanoflow
-  conda install -n nanoflow snakemake=4.8.1 -c bioconda -c conda-forge
+  
+  conda install -n nanoflow -c bioconda snakemake=4.8.1
   conda env update --name=nanoflow --file env.yml
   ```
  
-3. Clone Ryan Wick's Basecalling-comparison repository
+4. Clone Ryan Wick's Basecalling-comparison repository
   ```bash
   mkdir local
   cd local
   git clone https://github.com/rrwick/Basecalling-comparison.git
   ```
 
-4. Download other packages into local directory
+5. Download other packages into local directory
   ```bash
   ## Canu 1.8
   wget https://github.com/marbl/canu/archive/v1.8.tar.gz
