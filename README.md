@@ -69,9 +69,10 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   ```
 
 ## Usage
-1. Basecalling:
+1. Basecalling: the raw fast5 signal data files were basecalled using ONT’s Albacore command line tool (v.2.2.7), with barcode demultiplexing and fastq output. You can perform the basecalling step either by snakemake or run the `run_albacore.sh` bash script, with proper directory info.
+
   ```bash
-  snakemake --configfile _all_basecalling
+  snakemake --configfile all_basecalling
   ```
 
 2. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
