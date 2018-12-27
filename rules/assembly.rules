@@ -1,65 +1,23 @@
 ####################
-## Hybrid Assembly Pipeline 3: 
-## Unicycler with existing long assembly (best)
+## Assess and compare final contigs
+## MUMmer (+ QUAST) + minimap2
 ####################
 
 from Bio import SeqIO
 from glob import glob
 from sbx_igv import *
 
-rule _all:
+rule all_final:
  input:
   expand(config['project_dir'] + '/reports/final_assembly/nucmer/{barcode}/{prefix}.coords',
-  barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2']),
+        barcode=BARCODES, prefix = ['ref_draft1','ref_draft2','draft1_draft2']),
   expand(config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft{v}/draft{v}.gff', 
-  barcode=BARCODES, v=['1','2']),
-  expand(config['project_dir'] + '/reports/final_assembly/{barcode}/quast_results/quast.log', barcode=BARCODES),
+        barcode=BARCODES, v=['1','2']),
   expand(config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/{reads}.sorted.bam',
         barcode=BARCODES,reads=['shortreads','subsampled','corrected'])
 
-rule _all_igv_map:
- input:
-  expand(config['project_dir']+'/reports/10_mapping/{barcode}/unicycler/done.igv',barcode=BARCODES)
 
-rule _all_draft3:
- input:
-  expand(config['project_dir'] + '/reports/{step}/{barcode}/asm.aln.tsv', 
-    step=['09_unicycler_long'], barcode=BARCODES)
-
-rule run_unicycler_existing_long:
- input:
-  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
-  R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
-  R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
-  longasm = config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta'
- output:
-  contigs = config['project_dir'] + '/09_unicycler_long/{barcode}/assembly.fasta'
- threads: 16
- params:
-  outdir = config['project_dir'] + '/09_unicycler_long/{barcode}'
- shell:
-  """
-  unicycler -1 {input.R1} -2 {input.R2} -l {input.reads} -o {params.outdir} -t {threads} --existing_long_read_assembly {input.longasm}
-  """
-
-rule assess_unicycler_existing_long:
- input:
-  genome = config['project_dir'] + '/' + config['genome_fp'],
-  draft_v3 = config['project_dir'] + '/09_unicycler_long/{barcode}/assembly.fasta',
-  python_chop_fp = config['basecalling_cmp_fp'] + '/chop_up_assembly.py',
-  python_ident_fp = config['basecalling_cmp_fp'] + '/read_length_identity.py'
- output:
-  asm_pieces = config['project_dir'] + '/09_unicycler_long/{barcode}/asm_pieces.fasta',
-  asm_aln = config['project_dir'] + '/09_unicycler_long/{barcode}/asm.aln.paf',
-  asm_table = config['project_dir'] + '/reports/09_unicycler_long/{barcode}/asm.aln.tsv'
- threads: 2
- shell:
-  """
-  python {input.python_chop_fp} {input.draft_v3} 10000 > {output.asm_pieces}
-  minimap2 -x map10k -t {threads} -c {input.genome} {output.asm_pieces} > {output.asm_aln}
-  python {input.python_ident_fp} {output.asm_pieces} {output.asm_aln} > {output.asm_table}
-  """
-
+## Put your favoriate two assemblies as the input 
 rule final_contigs:
  input:
   config['project_dir'] + '/05_nanopolish/{barcode}/nanopolish.contigs.fasta',
@@ -103,6 +61,7 @@ rule eval_assembly:
   show-coords -r -c -l {params.prefix}.delta > {output.draft1_draft2}
   """
 
+## For PCMP we got C diff isolates
 rule run_prokka:
  input:
   draft1 = config['project_dir'] + '/reports/final_assembly/{barcode}/draft1.fasta',
@@ -125,6 +84,71 @@ rule run_prokka:
        --genus Cdiff --usegenus --locustag draft2 --force {input.draft2}
   """ 
 
+rule bwa_index_draft:
+ input:
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta'
+ output:
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
+ shell:
+  """
+  cp {input.draft} {output.draft}
+  bwa index {output.draft}
+  """
+
+## map short reads to assembled draft genomes
+rule bwa_short_reads:
+ input:
+  R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
+  R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
+ output:
+  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/shortreads.sorted.bam'
+ threads: 8
+ params:
+  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/shortreads.tmp'
+ shell:
+  """
+  minimap2 -ax sr -t {threads}  {input.draft} {input.R1} {input.R2} | \
+   samtools sort  -@ {threads} -o {output.bam} -T {params.temp} -
+  samtools index {output.bam} 
+  """
+
+rule minimap2_subsampled_reads:
+ input:
+  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
+ output:
+  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/subsampled.sorted.bam'
+ threads: 8
+ params:
+  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/subsampled.reads.tmp'
+ shell:
+  """
+  minimap2 -ax map-ont -t {threads} {input.draft} {input.reads} | \
+   samtools sort  -@ {threads} -o {output.bam} -T {params.temp} -
+  samtools index {output.bam}
+  """
+
+rule minimap2_corrected_reads:
+ input:
+  reads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz',
+  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
+  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
+ output:
+  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/corrected.sorted.bam'
+ threads: 8
+ params:
+  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/corrected.reads.tmp'
+ shell:
+  """
+  minimap2 -ax map-ont -t {threads} {input.draft} {input.reads} | \
+   samtools sort  -@ {threads} -o {output.bam} -T {params.temp} -
+  samtools index {output.bam}
+  """
+
 rule make_blastdb:
  input:
   config['project_dir'] + '/reports/final_assembly/{barcode}/prokka_draft1/draft1.ffn',
@@ -137,6 +161,11 @@ rule make_blastdb:
   makeblastdb -in {input[0]} -dbtype nucl
   makeblastdb -in {input[1]} -dbtype nucl
   """
+
+## (optional)
+rule _all_quast:
+ input:
+  expand(config['project_dir'] + '/reports/final_assembly/{barcode}/quast_results/quast.log', barcode=BARCODES)
 
 rule run_quast:
  input:
@@ -158,75 +187,16 @@ rule run_quast:
            {input.draft1} {input.draft2}
   """
 
-rule bwa_index_draft:
- input:
-  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/draft2.fasta'
- output:
-  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
-  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
- shell:
-  """
-  cp {input.draft} {output.draft}
-  bwa index {output.draft}
-  """
 
-rule bwa_short_reads:
+## (optional) 
+rule _all_igv:
  input:
-  R1 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R1.fastq',
-  R2 = config['project_dir'] + '/' + config['short_reads_fp'] + '/{barcode}/R2.fastq',
-  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
-  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
- output:
-  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/shortreads.sorted.bam'
- threads: 8
- params:
-  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/shortreads.tmp'
- shell:
-  """
-  bwa mem -t {threads} {input.draft} {input.R1} {input.R2} | \
-   samtools sort -o {output.bam} -T {params.temp} -
-  samtools index {output.bam} 
-  """
-
-rule minimap2_subsampled_reads:
- input:
-  reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
-  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
-  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
- output:
-  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/subsampled.sorted.bam'
- threads: 8
- params:
-  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/subsampled.reads.tmp'
- shell:
-  """
-  minimap2 -ax map-ont -t {threads} {input.draft} {input.reads} | \
-   samtools sort -o {output.bam} -T {params.temp} -
-  samtools index {output.bam}
-  """
-
-rule minimap2_corrected_reads:
- input:
-  reads = config['project_dir'] + '/04_canu/{barcode}/canu.correctedReads.fasta.gz',
-  draft = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
-  index = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta.amb'
- output:
-  bam = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/corrected.sorted.bam'
- threads: 4
- params:
-  temp = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/corrected.reads.tmp'
- shell:
-  """
-  minimap2 -ax map-ont -t {threads} {input.draft} {input.reads} | \
-   samtools sort -o {output.bam} -T {params.temp} -
-  samtools index {output.bam}
-  """
+  expand(config['project_dir']+'/reports/10_mapping/{barcode}/unicycler/done.igv',barcode=BARCODES)
 
 rule igv_plot:
  input:
   genome = config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/draft.fasta',
   bams = expand(config['project_dir'] + '/reports/final_assembly/{{barcode}}/asm_mapping/{reads}.sorted.bam', reads=['shortreads','subsampled','corrected'])
-  #bais = expand(config['project_dir'] + '/reports/final_assembly/{{barcode}}/unicycler/{reads}.sorted.bam.bai', reads=['shortreads','subsampled','corrected'])
  output:
   config['project_dir'] + '/reports/final_assembly/{barcode}/asm_mapping/done.igv'
  params:

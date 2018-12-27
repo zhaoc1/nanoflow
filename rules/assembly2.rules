@@ -1,9 +1,9 @@
 ####################
 ## Hybrid Assembly Pipeline 2: 
-## Unicycler
+## Unicycler (default mode)
 ####################
 
-rule _all_draft2:
+rule all_draft2:
  input:
   expand(config['project_dir'] + '/reports/{step}/{barcode}/asm.aln.tsv', 
     step=['08_unicycler'], barcode=BARCODES)
@@ -35,7 +35,7 @@ rule assess_unicycler:
   asm_pieces = config['project_dir'] + '/08_unicycler/{barcode}/asm_pieces.fasta',
   asm_aln = config['project_dir'] + '/08_unicycler/{barcode}/asm.aln.paf',
   asm_table = config['project_dir'] + '/reports/08_unicycler/{barcode}/asm.aln.tsv'
- threads: 2
+ threads: 8
  shell:
   """
   python {input.python_chop_fp} {input.draft_v2} 10000 > {output.asm_pieces}
