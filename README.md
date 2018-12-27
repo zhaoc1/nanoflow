@@ -4,14 +4,29 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
 
 ## Installation
 
-1. Clone Jesse's conda-gcc5 repository and create an new environment `nanoflow` with GCC5 installed
+1. Install [Conda](https://conda.io/miniconda.html) environment manager, and make sure the `~/.condarc` is your home directory.
+  ```bash
+  nano ~/.condarc
+  ```
+  Copy the following to the file.
+   ```bash
+   channels:
+    - bioconda
+    - conda-forge
+    - r
+    - defaults
+  ```
+
+2. Install GCC5, by cloning [Jesse](https://github.com/ressy)'s conda-gcc5 repository and create an new conda environment `nanoflow`.
   
   ```bash
+  cd ~
   git clone https://github.com/ressy/conda-gcc5.git
   cd conda-gcc5
   bash setup.sh nanoflow
   ```
-2. Clone this repository into a local directory and activate `nanoflow` environment
+  
+3. Clone this repository into a local directory and activate `nanoflow` environment
   ```bash
   git clone https://github.com/zhaoc1/nanoflow.git nanoflow
   cd nanoflow
