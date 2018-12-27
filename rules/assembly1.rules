@@ -1,12 +1,12 @@
 ####################
 ## Hybrid Assembly Pipeline 1:
-## Canu + Nanopolish + Circlator + Pilon
+## Canu + Nanopolish (+ Circlator + Pilon)
 ####################
 
-rule _all_draft1:
+rule all_draft1:
  input:
   expand(config['project_dir'] + '/reports/{step}/{barcode}/asm.aln.tsv', 
-    step=['04_canu','05_nanopolish','07_pilon'], barcode=BARCODES)
+    step=['04_canu','05_nanopolish'], barcode=BARCODES)
 
 #### Long Reads Assembler: Canu
 rule canu_asm:
@@ -47,11 +47,8 @@ rule assess_canu:
 #### Prepare sequencing summary for fast nanopolish index fast5 files
 rule collect_sequencing_summary:
  input:
-  ## run9
-  #expand(config['basecalled_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/sequencing_summary.txt', barcode=BARCODES),
-  #config['basecalled_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/sequencing_summary.txt'
   config['basecalled_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt',
-  #config['basecalled_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt'
+  config['basecalled_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/sequencing_summary.txt'
  output:
   config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
  run:
@@ -64,8 +61,6 @@ rule nanopolish_index:
  input:
   fast5_fp1 = config['basecalled_fast5_fp1'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
   fast5_fp2 = config['basecalled_fast5_fp2'] + '/fast5/basecalled_albacore_v2.1/workspace/pass/{barcode}',
-#  fast5_fp1 = config['basecalled_fast5_fp1'] + '/{barcode}/{barcode}_basecalled_albacore_v2.1/workspace/pass/{barcode}',
-#  fast5_fp2 = config['basecalled_fast5_fp2'] + '/basecalled_dir_albacore_v2.1/workspace/pass/{barcode}',
   reads = config['project_dir'] + '/03_subsampled_reads/{barcode}/reads.fastq.gz',
   nanopolish_fp = config['nanopolish_fp'] + '/nanopolish',
   summary = config['project_dir'] + '/05_nanopolish/{barcode}/sequencing_summary_files.txt'
