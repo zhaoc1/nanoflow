@@ -76,13 +76,17 @@ Nanoflow is a pipeline written in snakemake to automate many of the steps of qua
   ```
 
 2. Preprocess: quality filter, confidently-binned, and subsampled subsample long reads
+
   ```bash
-  snakemake --configfile config.yml _all_qc
+  snakemake --configfile config.yml all_qc
   ```
  
-3. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) + [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki)
+3. Hybrid assembly option 1: [ Canu](http://canu.readthedocs.io/en/latest/quick-start.html) + [ Nanopolish](http://nanopolish.readthedocs.io/en/latest/installation.html#installing-a-particular-release) (+ [ Circlator](https://github.com/sanger-pathogens/circlator/wiki/Brief-instructions) + [ Pilon](https://github.com/broadinstitute/pilon/wiki))
+
+    * long reads only product: long reads only assembly polished by signal data, can be used by hybrid assembly option 3.
+    
   ```bash
-  snakemake --configfile config.yaml --cores 8 _all_draft1
+  snakemake --configfile config.yaml --cores 8 all_draft1
   ```
   
 4. Hybrid assembly option 2: [ Unicycler](https://github.com/rrwick/Unicycler#method-hybrid-assembly)
