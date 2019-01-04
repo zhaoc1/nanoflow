@@ -2,6 +2,8 @@
 
 Nanoflow is a pipeline written in snakemake to automate many of the steps of quality control, de novo assemblies and genome annotation in whole genome sequencing analysis, using Oxford Nanopore sequencing data.
 
+20190104: add github page
+
 ## Installation
 
 1. Install [Conda](https://conda.io/miniconda.html) environment manager, and make sure the `~/.condarc` is your home directory.
