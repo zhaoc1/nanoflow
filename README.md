@@ -2,6 +2,8 @@
 
 Nanoflow is a pipeline written in snakemake to automate many of the steps of quality control, de novo assemblies and genome annotation in whole genome sequencing analysis, using Oxford Nanopore sequencing data.
 
+[![CircleCI](https://circleci.com/gh/zhaoc1/nanoflow.svg?style=shield)](https://circleci.com/gh/zhaoc1/nanoflow)
+
 20190104: add github page
 
 ## Installation
